@@ -8,6 +8,15 @@ import { Plan } from "./screens/Plan";
 import { Progress } from "./screens/Progress";
 import { Today } from "./screens/Today";
 
+// Simple inline icons (24×24, stroke) so the tab bar is readable at a glance.
+const ICONS = {
+  today: "M6 9v6M18 9v6M3 11v2M21 11v2M6 12h12",
+  plan: "M4 6h16v14H4zM4 10h16M9 3v4M15 3v4",
+  progress: "M4 19h16M6 16l4-5 3 3 5-7",
+  exercises: "M5 5h14M5 12h14M5 19h9",
+  gym: "M12 3l8 4v5c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V7z",
+};
+
 const TABS = [
   { id: "today", label: "Workout" },
   { id: "plan", label: "Plan" },
@@ -88,6 +97,9 @@ export default function App() {
       <nav className="tabbar" aria-label="Main">
         {TABS.map((t) => (
           <a key={t.id} href={`#${t.id}`} className={t.id === tab ? "active" : ""} aria-current={t.id === tab ? "page" : undefined}>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d={ICONS[t.id]} />
+            </svg>
             {t.label}
           </a>
         ))}

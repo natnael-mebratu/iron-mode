@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { EQUIPMENT } from "../data/equipment";
 import { EXERCISES, EXERCISES_BY_ID } from "../data/exercises";
 import { PLANS } from "../data/plans";
+import { TECHNIQUE } from "../data/technique";
 import { readBackup, setsToCSV } from "./backup";
 import { parseRepRange, previousPerformance, suggest } from "./progression";
 import { resolveSlot } from "./resolve";
@@ -33,6 +34,14 @@ describe("data integrity", () => {
       const sessionIds = plan.sessions.map((s) => s.id);
       for (const id of Object.values(plan.defaultWeek)) if (id) expect(sessionIds).toContain(id);
     }
+  });
+
+  it("every exercise has technique coaching, and no coaching is orphaned", () => {
+    for (const ex of EXERCISES) {
+      expect(TECHNIQUE[ex.id], ex.id).toBeDefined();
+      expect(TECHNIQUE[ex.id].tips.length, ex.id).toBeGreaterThanOrEqual(2);
+    }
+    for (const id of Object.keys(TECHNIQUE)) expect(EXERCISES_BY_ID.has(id), id).toBe(true);
   });
 
   it("no exercise needs a machine the user said the gym doesn't have", () => {

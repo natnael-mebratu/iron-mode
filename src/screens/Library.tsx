@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ExerciseBadges, ExerciseDetails } from "../components/ExerciseDetails";
 import { ExerciseThumb } from "../components/ExerciseImage";
 import { EXERCISES } from "../data/exercises";
+import { TECHNIQUE_BASICS } from "../data/technique";
 import { exerciseAvailability } from "../lib/resolve";
 import type { AppState } from "../lib/storage";
 import type { MuscleGroup } from "../lib/types";
@@ -35,6 +36,19 @@ export function Library({ state }: { state: AppState }) {
   return (
     <section>
       <h2>Exercises</h2>
+      <details className="basics">
+        <summary>Technique basics: how to make the right muscle work</summary>
+        {TECHNIQUE_BASICS.map((topic) => (
+          <div key={topic.title} className="basics__topic">
+            <h4>{topic.title}</h4>
+            <ul>
+              {topic.points.map((p) => (
+                <li key={p}>{p}</li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </details>
       <div className="pills pills--wide" aria-label="Filter">
         {(
           [

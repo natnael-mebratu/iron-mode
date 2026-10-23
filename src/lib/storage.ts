@@ -46,6 +46,8 @@ export interface Settings {
   showDemoPhotos: boolean;
   timerSound: boolean;
   safetyNoteDismissed: boolean;
+  /** The one-time "turn on photos?" question has been answered. */
+  photoPromptSeen: boolean;
 }
 
 export interface AppState {
@@ -76,7 +78,13 @@ export function defaultState(): AppState {
     weeks: Object.fromEntries(PLANS.map((p) => [p.id, { ...p.defaultWeek }])),
     logs: {},
     body: [],
-    settings: { elbowFriendly: true, showDemoPhotos: false, timerSound: true, safetyNoteDismissed: false },
+    settings: {
+      elbowFriendly: true,
+      showDemoPhotos: false,
+      timerSound: true,
+      safetyNoteDismissed: false,
+      photoPromptSeen: false,
+    },
   };
 }
 
@@ -203,6 +211,7 @@ export function sanitize(raw: unknown): AppState {
     showDemoPhotos: bool(s.showDemoPhotos, false),
     timerSound: bool(s.timerSound, true),
     safetyNoteDismissed: bool(s.safetyNoteDismissed, raw.safetyNoteDismissed === true),
+    photoPromptSeen: bool(s.photoPromptSeen, false),
   };
   return state;
 }
@@ -241,6 +250,11 @@ function load(): AppState {
 
 export function useAppState() {
   const [state, setState] = useState<AppState>(load);
+
+  useEffect(() => {
+    // Ask the browser not to clear this app's storage under pressure (no prompt on most phones).
+    void navigator.storage?.persist?.().catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     try {

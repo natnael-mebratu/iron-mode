@@ -68,6 +68,7 @@ export const EQUIPMENT: Equipment[] = [
     id: "incline-bench-station",
     name: "Incline bench press station",
     defaultAvailability: "available",
+    notes: "Fixed incline bench with a barbell rack. Its seat also works for incline dumbbell presses and flys.",
     photos: ["equipment/incline-bench-station.jpg"],
   },
   { id: "kettlebells", name: "Kettlebells", defaultAvailability: "available" },

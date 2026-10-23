@@ -79,6 +79,11 @@ export function Today({ state, setState, onAnswerEquipment, onStartRest }: Props
   const totalSets = required.reduce((n, r) => n + r.slot.sets, 0);
   const doneSets = resolved.reduce((n, r) => n + (r.entry?.sets.filter((s) => s.done).length ?? 0), 0);
   const started = doneSets > 0;
+  const upNextId = resolved.find(
+    (r) => r.resolution.kind === "assigned" && !r.slot.optional && (r.entry?.sets.filter((s) => s.done).length ?? 0) < r.slot.sets,
+  )?.slot.id;
+  const setSetting = (patch: Partial<AppState["settings"]>) =>
+    setState((s) => ({ ...s, settings: { ...s.settings, ...patch } }));
   const fastingDay = day === 3 || day === 5;
 
   return (
@@ -96,7 +101,8 @@ export function Today({ state, setState, onAnswerEquipment, onStartRest }: Props
               className={`chip${d === day ? " chip--active" : ""}${week[d] ? "" : " chip--rest"}`}
               onClick={() => setDay(d)}
             >
-              {WEEKDAY_NAMES[d].slice(0, 3)}
+              <span className="chip__day">{WEEKDAY_NAMES[d].slice(0, 3)}</span>
+              <span className="chip__label">{shortName(plan.sessions.find((s) => s.id === week[d])?.name)}</span>
               {logged && <span className="chip__dot" aria-label="logged" />}
             </button>
           );
@@ -123,7 +129,7 @@ export function Today({ state, setState, onAnswerEquipment, onStartRest }: Props
           <button
             type="button"
             className="btn btn--small btn--ghost"
-            onClick={() => setState((s) => ({ ...s, settings: { ...s.settings, safetyNoteDismissed: true } }))}
+            onClick={() => setSetting({ safetyNoteDismissed: true })}
           >
             Got it
           </button>
@@ -147,6 +153,23 @@ export function Today({ state, setState, onAnswerEquipment, onStartRest }: Props
             </label>
           )}
         </div>
+      )}
+
+      {session && !state.settings.photoPromptSeen && !state.settings.showDemoPhotos && (
+        <aside className="prompt">
+          <p>
+            <strong>Show exercise photos?</strong> Start/finish demo photos load from the internet (free) and are saved
+            for offline use once you've seen them. Your own gym photos always show.
+          </p>
+          <div className="btnrow">
+            <button type="button" className="btn btn--small" onClick={() => setSetting({ showDemoPhotos: true, photoPromptSeen: true })}>
+              Yes, show photos
+            </button>
+            <button type="button" className="btn btn--small btn--ghost" onClick={() => setSetting({ photoPromptSeen: true })}>
+              Not now
+            </button>
+          </div>
+        </aside>
       )}
 
       {session && fastingDay && (
@@ -189,6 +212,7 @@ export function Today({ state, setState, onAnswerEquipment, onStartRest }: Props
             prev={prev}
             suggestion={suggestion}
             showDemo={state.settings.showDemoPhotos}
+            upNext={started && slot.id === upNextId}
             onSetChange={(i, set: SetEntry) =>
               resolution.kind === "assigned" &&
               updateEntry(slot.id, resolution.exercise.id, (e) => {
@@ -227,6 +251,12 @@ export function Today({ state, setState, onAnswerEquipment, onStartRest }: Props
       )}
     </section>
   );
+}
+
+/** Short label for a day chip, e.g. "Legs A + Abs" → "Legs A". */
+function shortName(name: string | undefined) {
+  if (!name) return "Rest";
+  return name.split(/ \+ | \(/)[0];
 }
 
 function ReadinessCheck({ onSave }: { onSave: (r: Readiness) => void }) {

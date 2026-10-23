@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { TECHNIQUE } from "../data/technique";
 import { formatSet, type PreviousPerformance, type Suggestion } from "../lib/progression";
 import type { SlotResolution } from "../lib/resolve";
 import type { ExerciseLog, SetEntry } from "../lib/storage";
@@ -14,6 +15,8 @@ interface Props {
   prev: PreviousPerformance | null;
   suggestion: Suggestion | null;
   showDemo: boolean;
+  /** Highlight as the next exercise to do. */
+  upNext?: boolean;
   onSetChange: (index: number, set: SetEntry) => void;
   /** Called after a set is ticked done, to start the rest timer. */
   onSetDone: () => void;
@@ -31,9 +34,10 @@ const parse = (v: string): number | null => {
 };
 
 export function ExerciseCard(props: Props) {
-  const { slot, resolution, entry, prev, suggestion, showDemo, onSetChange, onSetDone, onSymptom, onAnswerEquipment } =
+  const { slot, resolution, entry, prev, suggestion, showDemo, upNext, onSetChange, onSetDone, onSymptom, onAnswerEquipment } =
     props;
   const [open, setOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   if (resolution.kind === "blocked") {
     return (
@@ -67,6 +71,27 @@ export function ExerciseCard(props: Props) {
     };
   };
 
+  if (complete && !expanded) {
+    return (
+      <article className="card card--done card--compact">
+        <button type="button" className="compact" onClick={() => setExpanded(true)} aria-expanded={false}>
+          <span className="compact__check" aria-hidden="true">
+            ✓
+          </span>
+          <span className="compact__body">
+            <strong>{exercise.name}</strong>
+            <span className="muted small block">
+              {sets.filter((s) => s.done).map((s) => formatSet(s, exercise)).join(" · ")}
+            </span>
+          </span>
+          <span className="muted small">Edit</span>
+        </button>
+      </article>
+    );
+  }
+
+  const tips = TECHNIQUE[exercise.id]?.tips.slice(0, 2) ?? [];
+
   const toggle = (i: number) => {
     const s = sets[i];
     if (s.done) return onSetChange(i, { ...s, done: false });
@@ -80,7 +105,10 @@ export function ExerciseCard(props: Props) {
   };
 
   return (
-    <article className={`card${complete ? " card--done" : ""}${entry?.symptom ? " card--symptom" : ""}`}>
+    <article
+      className={`card${complete ? " card--done" : ""}${entry?.symptom ? " card--symptom" : ""}${upNext ? " card--next" : ""}`}
+    >
+      {upNext && <span className="next-tag">Up next</span>}
       <button type="button" className="card__top" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
         <ExerciseThumb exercise={exercise} showDemo={showDemo} />
         <div className="card__summary">
@@ -105,6 +133,14 @@ export function ExerciseCard(props: Props) {
       </button>
 
       {open && <ExerciseDetails exercise={exercise} showDemo={showDemo} />}
+
+      {!open && tips.length > 0 && (
+        <ul className="keycues" aria-label="Key technique cues">
+          {tips.map((t) => (
+            <li key={t}>{t}</li>
+          ))}
+        </ul>
+      )}
 
       {suggestion && (
         <p className={`hint hint--${suggestion.kind}`}>
