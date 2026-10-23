@@ -48,6 +48,14 @@ export const EQUIPMENT: Equipment[] = [
     photos: ["equipment/preacher-bench.jpg"],
   },
 
+  {
+    id: "seated-calf-raise",
+    name: "Seated calf raise machine (plate-loaded)",
+    defaultAvailability: "available",
+    notes: "Identified from your photo 1. Switch to \"Don't have\" if it turns out to be something else.",
+    photos: ["equipment/mystery-plate-machine.jpg"],
+  },
+
   // Free weights
   { id: "dumbbells", name: "Dumbbells (full range)", defaultAvailability: "available" },
   {
@@ -75,14 +83,6 @@ export const EQUIPMENT: Equipment[] = [
   { id: "ab-wheel", name: "Ab wheel", defaultAvailability: "available", notes: "Seen in photo 6." },
 
   // Not confirmed
-  {
-    id: "seated-calf-raise",
-    name: "Seated calf raise machine",
-    defaultAvailability: "unknown",
-    notes:
-      "You said earlier there isn't one, but photo 1 looks like a plate-loaded seated calf raise. Please check.",
-    photos: ["equipment/mystery-plate-machine.jpg"],
-  },
   { id: "cable-handle", name: "Cable single handle (D-handle)", defaultAvailability: "unknown" },
   { id: "cable-straight-bar", name: "Cable straight-bar attachment", defaultAvailability: "unknown" },
   { id: "lying-leg-curl", name: "Lying leg curl machine", defaultAvailability: "unknown" },

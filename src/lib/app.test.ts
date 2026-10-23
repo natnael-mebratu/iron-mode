@@ -67,12 +67,11 @@ describe("resolveSlot", () => {
     }
   });
 
-  it("falls back and asks about the seated calf raise until it's confirmed", () => {
+  it("uses the seated calf raise, and falls back if it's marked unavailable", () => {
     const r = resolveSlot(slotById("lb-calf"), inventory);
-    expect(r.kind === "assigned" && r.exercise.id).toBe("leg-press-calf-raise");
-    expect(r.kind === "assigned" && r.askAbout).toEqual(["seated-calf-raise"]);
-    const confirmed = resolveSlot(slotById("lb-calf"), { ...inventory, "seated-calf-raise": "available" });
-    expect(confirmed.kind === "assigned" && confirmed.exercise.id).toBe("seated-calf-raise");
+    expect(r.kind === "assigned" && r.exercise.id).toBe("seated-calf-raise");
+    const without = resolveSlot(slotById("lb-calf"), { ...inventory, "seated-calf-raise": "unavailable" });
+    expect(without.kind === "assigned" && without.exercise.id).toBe("leg-press-calf-raise");
   });
 
   it("skips elbow-caution exercises in elbow-friendly mode", () => {

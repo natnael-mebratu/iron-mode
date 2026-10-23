@@ -30,7 +30,7 @@ the written setup/cues.
 | `bench-press-station.jpg` | Flat bench press station | Barbell bench press |
 | `incline-bench-station.jpg` | Incline bench press station | (Library only) |
 | `ab-bench.jpg` | Bench with foot rollers; kettlebells, plates and an ab wheel behind | Equipment list only |
-| `mystery-plate-machine.jpg` | Plate-loaded machine with seat, thigh roller and foot plate: **looks like a seated calf raise** | Seated calf raise, once you confirm it |
+| `mystery-plate-machine.jpg` | Plate-loaded machine with seat, thigh roller and foot plate: **seated calf raise** | Seated calf raise |
 
 ## Exercises
 

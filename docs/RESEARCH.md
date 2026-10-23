@@ -15,7 +15,7 @@ changed the app. Where evidence is thin or the sources disagree, it says so.
 | 8 | **Flat bench press station** + barbell | Available |
 | 10 | **Incline bench press station** | Available |
 | 6 | Bench with foot rollers; behind it: kettlebells, plate trees, an ab wheel, adjustable benches | Kettlebells, ab wheel, adjustable bench available |
-| 1 | Plate-loaded machine with a seat, a roller over the thighs and a foot plate. **This looks like a seated calf raise.** | Left as "Not sure" because you said earlier there isn't one. Please check |
+| 1 | Plate-loaded machine with a seat, a roller over the thighs and a foot plate. **This looks like a seated calf raise.** | Available: you confirmed it looks right |
 
 Also visible in the backgrounds: dumbbells to at least 55 kg, medicine balls, a
 functional trainer/cable crossover and cardio machines. The cable D-handle,
