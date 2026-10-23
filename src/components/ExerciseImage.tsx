@@ -1,32 +1,84 @@
 import { useState } from "react";
+import { gymPhotosFor } from "../data/equipment";
+import { demoUrl } from "../data/exercises";
 import type { Exercise } from "../lib/types";
 
-/**
- * Shows the exercise photo when one has been added, otherwise an honest
- * placeholder. Never substitutes a generic image.
- */
-export function ExerciseImage({ exercise }: { exercise: Exercise }) {
-  const [failed, setFailed] = useState(false);
-  const image = exercise.image;
+const base = import.meta.env.BASE_URL;
 
-  if (image && !failed) {
+/** A photo that falls back to an honest label if it fails (e.g. offline). */
+function Photo({ src, alt, caption }: { src: string; alt: string; caption?: string }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) {
     return (
-      <figure className="ex-image">
-        <img
-          src={import.meta.env.BASE_URL + image.src}
-          alt={image.alt}
-          loading="lazy"
-          onError={() => setFailed(true)}
-        />
-        {image.attribution && <figcaption>{image.attribution}</figcaption>}
-      </figure>
+      <div className="photo photo--failed" role="img" aria-label={alt}>
+        Photo unavailable{typeof navigator !== "undefined" && !navigator.onLine ? " offline" : ""}
+      </div>
     );
   }
-
   return (
-    <div className="ex-image ex-image--placeholder" role="img" aria-label={`No photo yet for ${exercise.name}`}>
-      <span className="ex-image__group">{exercise.muscleGroup}</span>
-      <span className="ex-image__text">{failed ? "Photo failed to load" : "Photo needed"}</span>
+    <figure className="photo">
+      <img src={src} alt={alt} loading="lazy" onError={() => setFailed(true)} />
+      {caption && <figcaption>{caption}</figcaption>}
+    </figure>
+  );
+}
+
+/**
+ * Card thumbnail. Prefers a photo of the user's own machine, then a demo
+ * photo (only if the user turned demos on), then an honest placeholder.
+ * Never substitutes a generic image.
+ */
+export function ExerciseThumb({ exercise, showDemo }: { exercise: Exercise; showDemo: boolean }) {
+  const [failed, setFailed] = useState(false);
+  const gym = gymPhotosFor(exercise.equipmentIds)[0];
+  const src = gym ? base + gym : showDemo && exercise.demo ? demoUrl(exercise.demo, 1) : null;
+
+  if (src && !failed) {
+    return (
+      <div className="thumb">
+        <img src={src} alt={gym ? `The machine at your gym for ${exercise.name}` : `${exercise.name} demonstration`} loading="lazy" onError={() => setFailed(true)} />
+        {gym && <span className="thumb__tag">Your gym</span>}
+      </div>
+    );
+  }
+  return (
+    <div className="thumb thumb--placeholder" role="img" aria-label={`No photo for ${exercise.name}`}>
+      <span className="thumb__group">{exercise.muscleGroup}</span>
+      <span className="thumb__text">{exercise.demo && !showDemo ? "Demo photos off" : "No photo yet"}</span>
+    </div>
+  );
+}
+
+/** Full gallery for the details view. */
+export function ExerciseGallery({ exercise, showDemo }: { exercise: Exercise; showDemo: boolean }) {
+  const gym = gymPhotosFor(exercise.equipmentIds);
+  const demo = showDemo && exercise.demo;
+  if (!gym.length && !demo) {
+    return (
+      <p className="muted small">
+        {exercise.demo
+          ? "Demo photos are off. Turn them on in My gym → Settings."
+          : "No photo for this exercise yet. Follow the written steps below."}
+      </p>
+    );
+  }
+  return (
+    <div className="gallery">
+      {gym.map((p) => (
+        <Photo key={p} src={base + p} alt={`The machine at your gym used for ${exercise.name}`} caption="Your gym" />
+      ))}
+      {demo && (
+        <>
+          <Photo src={demoUrl(demo, 0)} alt={`${exercise.name}: start position`} caption="Start" />
+          <Photo src={demoUrl(demo, 1)} alt={`${exercise.name}: end position`} caption="Finish" />
+        </>
+      )}
+      {demo && (
+        <p className="muted tiny gallery__credit">
+          Demo photos: Free Exercise DB (github.com/yuhonas/free-exercise-db).
+          {exercise.demoNote ? ` ${exercise.demoNote}` : ""}
+        </p>
+      )}
     </div>
   );
 }

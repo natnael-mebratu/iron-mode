@@ -6,6 +6,8 @@ export interface Equipment {
   /** What we know about the user's gym before they change anything. */
   defaultAvailability: Availability;
   notes?: string;
+  /** Photos of this machine at the user's own gym, relative to public/. */
+  photos?: string[];
 }
 
 export type MuscleGroup =
@@ -15,28 +17,41 @@ export type MuscleGroup =
   | "Biceps"
   | "Triceps"
   | "Forearms"
-  | "Legs"
-  | "Abs";
+  | "Quads"
+  | "Hamstrings & Glutes"
+  | "Calves & Shins"
+  | "Abs & Core";
 
-export interface ExerciseImage {
-  src: string;
-  alt: string;
-  attribution?: string;
-}
+/** How the set is measured. Weight sets log kg × reps. */
+export type LoadType = "weight" | "bodyweight" | "time";
 
 export interface Exercise {
   id: string;
   name: string;
   muscleGroup: MuscleGroup;
   targetMuscles: string[];
+  /** One line on what this exercise is for and why it's in the library. */
+  why: string;
   /** Every item listed is required. An empty list means bodyweight only. */
   equipmentIds: string[];
   setup: string;
   formCues: string[];
   commonMistakes: string[];
   safetyNotes?: string[];
-  /** Absent until a real, correctly matched photo is added to the repo. */
-  image?: ExerciseImage;
+  /** A lesser-known exercise picked for a specific reason (see RESEARCH.md). */
+  gem?: boolean;
+  /**
+   * Loads the elbow in deep bending or overhead, which can irritate the ulnar
+   * nerve. Hidden while elbow-friendly mode is on.
+   */
+  elbowCaution?: boolean;
+  load?: LoadType;
+  /** Smallest sensible weight jump in kg. */
+  increment?: number;
+  /** Free Exercise DB folder name for optional online demo photos. */
+  demo?: string;
+  /** Note shown when the demo photo differs from our exact setup. */
+  demoNote?: string;
 }
 
 /**

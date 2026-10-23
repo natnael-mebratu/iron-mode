@@ -35,9 +35,10 @@ export type SlotResolution =
 
 /**
  * Picks the first option whose equipment is all confirmed available. Unknown
- * equipment is never treated as available.
+ * equipment is never treated as available. In elbow-friendly mode, exercises
+ * that load the elbow in deep bending are skipped.
  */
-export function resolveSlot(slot: Slot, inventory: Inventory): SlotResolution {
+export function resolveSlot(slot: Slot, inventory: Inventory, opts: { elbowFriendly?: boolean } = {}): SlotResolution {
   const askAbout: string[] = [];
   const addUnknowns = (ex: Exercise) => {
     for (const id of ex.equipmentIds) {
@@ -47,7 +48,7 @@ export function resolveSlot(slot: Slot, inventory: Inventory): SlotResolution {
 
   for (const [index, id] of slot.options.entries()) {
     const exercise = EXERCISES_BY_ID.get(id);
-    if (!exercise) continue;
+    if (!exercise || (opts.elbowFriendly && exercise.elbowCaution)) continue;
     const availability = exerciseAvailability(exercise, inventory);
     if (availability === "available") {
       return { kind: "assigned", exercise, isSubstitute: index > 0, askAbout };

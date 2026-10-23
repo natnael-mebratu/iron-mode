@@ -1,40 +1,70 @@
 # IRON MODE
 
 A free, mobile-first workout tracker built around the equipment that's actually
-at your gym. It runs in the browser, keeps your data on your device, and
-needs no account or server.
+at your gym. It runs in the browser, installs to your home screen, works
+offline, and keeps your data on your phone. No account, no server, no
+subscription.
 
-## What works now (Phase 1)
+## Features
 
-- **Workout screen.** Pick a day (Sat → Fri) and see that day's session. Each
-  exercise card shows target muscles, equipment, sets × reps, rest, a "How to
-  do it" panel (setup, form cues, common mistakes) and short safety notes.
-  Tap each set when it's done.
-- **Equipment-aware plans.** Exercises are only assigned when *all* their
-  equipment is marked "Have it". The defaults are the four confirmed machines
-  (chest press, cable station with rope, leg press, leg extension). Seated leg
-  curl, seated calf raise and the hip abduction/adduction machines are marked
-  unavailable. Everything else is "Not sure", which counts as not available.
-  If a better exercise needs unconfirmed equipment, the card shows a
-  **Substitute** badge and asks one yes/no question.
-- **Two plans.** Your current 5-day split, plus an optional beginner 3-day
-  Push/Pull/Legs. Switch on the **Plan** tab. Days can be swapped without
-  losing a session.
-- **Exercise library** with availability labels (including **NOT AVAILABLE AT
-  MY GYM**).
-- **My gym.** Mark each item "Have it", "Not sure" or "Don't have".
-- Set ticks, plan choice, day arrangement and equipment are saved in the
-  browser (`localStorage`) and survive a refresh.
+**Workout (daily screen)**
+- Pick a day (Sat → Fri) and see that day's session. Each exercise card shows
+  a photo of *your gym's machine* where available, target muscles, sets × reps
+  and rest. Tap a card for setup, form cues, common mistakes and safety notes.
+- Log **kg × reps** per set. The **Previous** column shows last time's numbers,
+  and they pre-fill the inputs, so repeating a set is one tap.
+- **Progression tips** (double progression): a heavier weight is only suggested
+  when every set hit the top of the rep range. It never changes the weight on
+  its own, and never suggests more after you flagged symptoms.
+- **Rest timer** starts when you tick a set (−15 / +15 / skip, vibration +
+  beep). It stays accurate if the phone sleeps.
+- **"Felt tingling / pain" button** on every exercise.
+- Optional energy/soreness **check-in**, a gentle note on Wednesday/Friday
+  fasting days, and a **workout summary** with new best weights.
+- Rest day but want to train? Pick any session for today; your weekly plan
+  doesn't change and the log keeps that session.
 
-## Not built yet
+**Plan**
+- Your **current 5-day split** (Shoulders+Arms / Legs A / Chest+Triceps /
+  Back+Biceps / Legs B), rebuilt around your machines.
+- Optional **beginner 3-day Push/Pull/Legs**, with a plain-language explanation.
+- Swap days without losing anything.
 
-- Weight/reps logging, last-session values, progression suggestions
-- Rest timer
-- Workout history, body weight and charts
-- CSV/JSON export and import
-- PWA install and offline support
-- Exercise photos. See [docs/IMAGE_INVENTORY.md](docs/IMAGE_INVENTORY.md). All
-  exercises currently show a "Photo needed" placeholder.
+**Exercises**
+- 64 exercises, including 16 **★ hidden gems** (lesser-known exercises chosen
+  for a reason; see [docs/RESEARCH.md](docs/RESEARCH.md)).
+- Filters: *At my gym*, *Hidden gems*, *All*. Items your gym lacks are labelled
+  **NOT AVAILABLE AT MY GYM**.
+
+**Progress**
+- Workout history, per-exercise progress chart, optional body weight and waist
+  tracking with charts, and a short note on why ab exercises can't target
+  lower-belly fat.
+- **Backup:** save a `.json` backup, export `.csv` for spreadsheets, and restore
+  with validation and a preview. *Merge* never overwrites days you already
+  have; *Replace* downloads a copy of your current data first.
+
+**My gym**
+- Every machine with your photos and a Have it / Not sure / Don't have switch.
+  "Not sure" counts as not available.
+- Settings: elbow-friendly mode (on by default), online demo photos (off by
+  default, see below), timer sound.
+
+## Photos
+
+- `public/equipment/` holds **your own gym photos**, resized, with location
+  data removed.
+- **Online demo photos** come from [Free Exercise DB](https://github.com/yuhonas/free-exercise-db),
+  which calls them public domain. Many seem to come from an older commercial
+  site, so they are *not* stored in this repo. They load only if you turn them
+  on, and ones you've viewed are cached for offline use.
+- Full list: [docs/IMAGE_INVENTORY.md](docs/IMAGE_INVENTORY.md).
+
+## Your data
+
+Everything is stored in your browser's `localStorage` on your phone. Clearing
+browser data or uninstalling deletes it, so use **Progress → Save backup**
+now and then. Old data is upgraded automatically when the app updates.
 
 ## Run locally
 
@@ -43,9 +73,9 @@ Requires Node.js 20+.
 ```bash
 npm install
 npm run dev        # http://localhost:5173/iron-mode/
-npm test           # unit tests
+npm test           # unit tests (vitest)
 npm run typecheck
-npm run build      # production build in dist/
+npm run build      # production build + service worker in dist/
 npm run preview    # serve the build at http://localhost:4173/iron-mode/
 ```
 
@@ -62,23 +92,28 @@ the "Network" address on the same Wi-Fi.
 2. **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 3. Push to `main`. The workflow tests, builds and publishes to
    `https://<your-username>.github.io/iron-mode/`.
+4. On your phone, open that address → browser menu → **Add to Home screen**.
 
 The site is served from `/iron-mode/` (set in `vite.config.ts`). If you rename
-the repository, change `base` there to match.
+the repository, change `base` and the manifest `start_url`/`scope` there to
+match.
 
 ## Project layout
 
 ```
-src/data/equipment.ts   gym equipment + default availability
-src/data/exercises.ts   exercise library
-src/data/plans.ts       workout plans (slots list preferred exercise first, then substitutes)
+src/data/equipment.ts   gym equipment, default availability, your photos
+src/data/exercises.ts   exercise library (incl. hidden gems and demo photo ids)
+src/data/plans.ts       workout plans (each slot lists preferred exercise first, then substitutes)
 src/lib/resolve.ts      picks the exercise for each slot from available equipment
-src/lib/storage.ts      saved state + validation
-src/screens/            Workout, Plan, Exercises, My gym
+src/lib/progression.ts  previous performance and double-progression suggestions
+src/lib/storage.ts      saved state, validation, migration, merge
+src/lib/backup.ts       JSON/CSV export and validated import
+src/screens/            Workout, Plan, Progress, Exercises, My gym
+docs/RESEARCH.md        research behind the exercises, app design and safety rules
 ```
 
 ## Safety
 
 Stop any exercise that causes an electric-shock feeling, tingling, numbness or
-pain, and get recurring symptoms checked by a professional. The app shows
+pain, and get recurring symptoms checked by a professional. The app gives
 general guidance only and isn't medical advice.
