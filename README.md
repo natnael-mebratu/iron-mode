@@ -24,6 +24,20 @@ subscription.
 - Rest day but want to train? Pick any session for today; your weekly plan
   doesn't change and the log keeps that session.
 
+**Swapping and rebuilding**
+- Every exercise has a **⇄ Swap exercise** button. Pick a replacement (same sets and reps); only exercises your gym
+  can do are offered. Machine busy today? Swap just for today. Prefer another exercise? Tick **Use it every time**.
+- Exercises that need equipment you haven't confirmed appear under *Need equipment confirmed*. Answer yes/no and
+  they move up to *Available now*.
+- The workout **rebuilds itself whenever your equipment changes** and tells you what changed. Sets you've already
+  logged are never hidden, even if the plan changes underneath them.
+
+**Profiles**
+- Several people can use one phone, each with their own gym, plan, history and settings (tap your name, top right).
+- New people pick their own gym (or copy someone else's) and start with a clean slate. Existing data from before
+  profiles became your first profile automatically.
+- Share the app from the Profile screen. Everyone's data stays on their own phone.
+
 **Plan**
 - Your **current 5-day split** (Shoulders+Arms / Legs A / Chest+Triceps /
   Back+Biceps / Legs B), rebuilt around your machines.
@@ -62,7 +76,7 @@ subscription.
 
 ## Your data
 
-Everything is stored in your browser's `localStorage` on your phone. Clearing
+Everything is stored in your browser's `localStorage` on your phone, per profile. Clearing
 browser data or uninstalling deletes it, so use **Progress → Save backup**
 now and then. Old data is upgraded automatically when the app updates.
 
@@ -104,9 +118,10 @@ match.
 src/data/equipment.ts   gym equipment, default availability, your photos
 src/data/exercises.ts   exercise library (incl. hidden gems and demo photo ids)
 src/data/plans.ts       workout plans (each slot lists preferred exercise first, then substitutes)
-src/lib/resolve.ts      picks the exercise for each slot from available equipment
+src/lib/resolve.ts      picks the exercise for each slot (plan, swap or already-logged) and lists swap alternatives
+src/lib/install.ts      install prompt + browser detection (install help)
 src/lib/progression.ts  previous performance and double-progression suggestions
-src/lib/storage.ts      saved state, validation, migration, merge
+src/lib/storage.ts      profiles store, saved state, validation, migration, merge
 src/lib/backup.ts       JSON/CSV export and validated import
 src/screens/            Workout, Plan, Progress, Exercises, My gym
 docs/RESEARCH.md        research behind the exercises, app design and safety rules

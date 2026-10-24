@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { gymPhotosFor } from "../data/equipment";
 import { demoUrl } from "../data/exercises";
+import { useOwnPhotos } from "./OwnPhotos";
 import type { Exercise } from "../lib/types";
 
 const base = import.meta.env.BASE_URL;
@@ -30,14 +31,15 @@ function Photo({ src, alt, caption }: { src: string; alt: string; caption?: stri
  */
 export function ExerciseThumb({ exercise, showDemo }: { exercise: Exercise; showDemo: boolean }) {
   const [failed, setFailed] = useState(false);
+  const own = useOwnPhotos();
   const gym = gymPhotosFor(exercise.equipmentIds)[0];
   const src = gym ? base + gym : showDemo && exercise.demo ? demoUrl(exercise.demo, 1) : null;
 
   if (src && !failed) {
     return (
       <div className="thumb">
-        <img src={src} alt={gym ? `The machine at your gym for ${exercise.name}` : `${exercise.name} demonstration`} loading="lazy" onError={() => setFailed(true)} />
-        {gym && <span className="thumb__tag">Your gym</span>}
+        <img src={src} alt={gym ? `${own ? "The machine at your gym" : "Example machine"} for ${exercise.name}` : `${exercise.name} demonstration`} loading="lazy" onError={() => setFailed(true)} />
+        {gym && <span className="thumb__tag">{own ? "Your gym" : "Example"}</span>}
       </div>
     );
   }
@@ -51,6 +53,7 @@ export function ExerciseThumb({ exercise, showDemo }: { exercise: Exercise; show
 
 /** Full gallery for the details view. */
 export function ExerciseGallery({ exercise, showDemo }: { exercise: Exercise; showDemo: boolean }) {
+  const own = useOwnPhotos();
   const gym = gymPhotosFor(exercise.equipmentIds);
   const demo = showDemo && exercise.demo;
   if (!gym.length && !demo) {
@@ -65,7 +68,7 @@ export function ExerciseGallery({ exercise, showDemo }: { exercise: Exercise; sh
   return (
     <div className="gallery">
       {gym.map((p) => (
-        <Photo key={p} src={base + p} alt={`The machine at your gym used for ${exercise.name}`} caption="Your gym" />
+        <Photo key={p} src={base + p} alt={`${own ? "The machine at your gym" : "Example machine"} used for ${exercise.name}`} caption={own ? "Your gym" : "Example machine"} />
       ))}
       {demo && (
         <>

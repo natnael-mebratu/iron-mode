@@ -1474,3 +1474,275 @@ input {
 .basics li + li {
   margin-top: 6px;
 }
+
+/* ── Swap sheet ─────────────────────────────────────────────────────── */
+body.noscroll {
+  overflow: hidden;
+}
+
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.sheet__panel {
+  width: 100%;
+  max-width: 640px;
+  max-height: 88dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 18px 18px 0 0;
+  padding: 16px 16px calc(24px + env(safe-area-inset-bottom));
+  outline: none;
+}
+
+.sheet__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.sheet__head h2 {
+  font-size: 1.25rem;
+  margin: 0 0 2px;
+}
+
+.sheet__head p {
+  margin: 0;
+}
+
+.sheet__close {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.sheet__sub {
+  margin: 18px 0 6px;
+  color: var(--accent);
+  font-size: 1rem;
+}
+
+.swap__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.swap__pick {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.swap__pick:hover,
+.swap__pick:focus-visible {
+  border-color: var(--accent);
+}
+
+.swap__pick--locked {
+  cursor: default;
+  border-style: dashed;
+}
+
+.swap__pick .badges {
+  display: flex;
+  margin-top: 6px;
+}
+
+.swapbtn {
+  margin-top: 10px;
+}
+
+.linkbtn--swap {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 800;
+}
+
+.note--update ul {
+  margin: 6px 0;
+  padding-left: 20px;
+}
+
+.note--update {
+  border-left-color: var(--good);
+}
+
+/* ── Profiles ───────────────────────────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.profilelink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 4px 0 10px;
+  border-radius: 999px;
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.profilelink--on {
+  background: var(--surface);
+}
+
+.profilelink__name {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.avatar--big {
+  width: 56px;
+  height: 56px;
+  font-size: 1.5rem;
+}
+
+.who {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.who__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.who__body .field {
+  margin-top: 0;
+}
+
+.textinput {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  padding: 0 12px;
+  font-size: 1rem;
+}
+
+.people {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+}
+
+.people li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+
+.people__name {
+  flex: 1;
+  min-width: 0;
+}
+
+.profileform {
+  display: grid;
+  gap: 14px;
+  margin: 14px 0;
+}
+
+.choices {
+  border: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.choices legend {
+  padding: 0;
+  margin-bottom: 6px;
+}
+
+.choice {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.choice--on {
+  border-color: var(--accent);
+}
+
+.choice input {
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.steps {
+  margin: 10px 0;
+  padding-left: 22px;
+}
+
+.steps li + li {
+  margin-top: 8px;
+}
+
+.build {
+  text-align: center;
+  margin-top: 20px;
+}

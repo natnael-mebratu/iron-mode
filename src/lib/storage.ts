@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { EQUIPMENT } from "../data/equipment";
 import { PLANS, PLANS_BY_ID } from "../data/plans";
 import type { Availability, Week, Weekday } from "./types";
@@ -32,6 +32,8 @@ export interface WorkoutLog {
   readiness?: Readiness;
   finishedAt?: string;
   notes?: string;
+  /** Exercises swapped in for this day only, keyed by slot id. */
+  swaps?: Record<string, string>;
 }
 
 export interface BodyEntry {
@@ -48,6 +50,12 @@ export interface Settings {
   safetyNoteDismissed: boolean;
   /** The one-time "turn on photos?" question has been answered. */
   photoPromptSeen: boolean;
+  /** Show a lighter-day reminder on Wednesdays and Fridays. */
+  fastingDays: boolean;
+  /** The machine photos in the app show this person's own gym. */
+  ownGymPhotos: boolean;
+  /** The "install the app" banner was dismissed. */
+  installBannerDismissed: boolean;
 }
 
 export interface AppState {
@@ -60,9 +68,12 @@ export interface AppState {
   logs: Record<string, WorkoutLog>;
   body: BodyEntry[];
   settings: Settings;
+  /** Exercises the user chose to always use for a slot (keyed by slot id). */
+  swaps: Record<string, string>;
 }
 
-const KEY = "iron-mode:state";
+const LEGACY_KEY = "iron-mode:state";
+const STORE_KEY = "iron-mode:store";
 const BACKUP_KEY = "iron-mode:unreadable-backup";
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -78,12 +89,16 @@ export function defaultState(): AppState {
     weeks: Object.fromEntries(PLANS.map((p) => [p.id, { ...p.defaultWeek }])),
     logs: {},
     body: [],
+    swaps: {},
     settings: {
       elbowFriendly: true,
       showDemoPhotos: false,
       timerSound: true,
       safetyNoteDismissed: false,
       photoPromptSeen: false,
+      fastingDays: false,
+      ownGymPhotos: false,
+      installBannerDismissed: false,
     },
   };
 }
@@ -94,6 +109,12 @@ const isRecord = (v: unknown): v is Record<string, unknown> =>
 const AVAILABILITIES: Availability[] = ["available", "unavailable", "unknown"];
 
 const num = (v: unknown): number | null => (typeof v === "number" && Number.isFinite(v) && v >= 0 ? v : null);
+
+function stringMap(raw: unknown): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (isRecord(raw)) for (const [k, v] of Object.entries(raw)) if (typeof v === "string") out[k] = v;
+  return out;
+}
 
 function sanitizeSets(raw: unknown): SetEntry[] | null {
   if (!Array.isArray(raw)) return null;
@@ -125,6 +146,8 @@ function sanitizeLog(date: string, raw: unknown): WorkoutLog | null {
   }
   if (typeof raw.finishedAt === "string") log.finishedAt = raw.finishedAt;
   if (typeof raw.notes === "string") log.notes = raw.notes;
+  const swaps = stringMap(raw.swaps);
+  if (Object.keys(swaps).length) log.swaps = swaps;
   return log;
 }
 
@@ -212,7 +235,11 @@ export function sanitize(raw: unknown): AppState {
     timerSound: bool(s.timerSound, true),
     safetyNoteDismissed: bool(s.safetyNoteDismissed, raw.safetyNoteDismissed === true),
     photoPromptSeen: bool(s.photoPromptSeen, false),
+    fastingDays: bool(s.fastingDays, false),
+    ownGymPhotos: bool(s.ownGymPhotos, false),
+    installBannerDismissed: bool(s.installBannerDismissed, false),
   };
+  state.swaps = stringMap(raw.swaps);
   return state;
 }
 
@@ -227,29 +254,118 @@ export function mergeStates(current: AppState, incoming: AppState): AppState {
   };
 }
 
-function load(): AppState {
-  let text: string | null = null;
+// ── Profiles ────────────────────────────────────────────────────────────
+// Everything stays on this device. Each profile is a separate person with their
+// own gym, plan, history and settings, so one phone can be shared.
+
+export interface Profile {
+  id: string;
+  name: string;
+  createdAt: string;
+  state: AppState;
+}
+
+export interface Store {
+  version: 3;
+  activeId: string;
+  profiles: Profile[];
+}
+
+export function newId(): string {
   try {
-    text = localStorage.getItem(KEY);
+    return crypto.randomUUID();
   } catch {
-    return defaultState();
-  }
-  if (text === null) return defaultState();
-  try {
-    return sanitize(JSON.parse(text));
-  } catch {
-    // Keep a copy of anything we can't read rather than silently overwriting it.
-    try {
-      localStorage.setItem(BACKUP_KEY, text);
-    } catch {
-      /* storage full or blocked */
-    }
-    return defaultState();
+    return `p${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
   }
 }
 
-export function useAppState() {
-  const [state, setState] = useState<AppState>(load);
+export function cleanName(name: string): string {
+  return name.replace(/\s+/g, " ").trim().slice(0, 30);
+}
+
+export function emptyStore(): Store {
+  return { version: 3, activeId: "", profiles: [] };
+}
+
+export function addProfile(store: Store, profile: Profile, activate = true): Store {
+  return { ...store, activeId: activate ? profile.id : store.activeId || profile.id, profiles: [...store.profiles, profile] };
+}
+
+export function renameProfile(store: Store, id: string, name: string): Store {
+  const clean = cleanName(name);
+  if (!clean) return store;
+  return { ...store, profiles: store.profiles.map((p) => (p.id === id ? { ...p, name: clean } : p)) };
+}
+
+export function removeProfile(store: Store, id: string): Store {
+  const profiles = store.profiles.filter((p) => p.id !== id);
+  const activeId = store.activeId === id ? (profiles[0]?.id ?? "") : store.activeId;
+  return { ...store, profiles, activeId };
+}
+
+export function sanitizeStore(raw: unknown): Store {
+  const store = emptyStore();
+  if (!isRecord(raw) || raw.version !== 3 || !Array.isArray(raw.profiles)) return store;
+  const seen = new Set<string>();
+  for (const p of raw.profiles) {
+    if (!isRecord(p) || typeof p.id !== "string" || seen.has(p.id)) continue;
+    seen.add(p.id);
+    store.profiles.push({
+      id: p.id,
+      name: cleanName(typeof p.name === "string" ? p.name : "") || "Me",
+      createdAt: typeof p.createdAt === "string" ? p.createdAt : new Date().toISOString(),
+      state: sanitize(p.state),
+    });
+  }
+  store.activeId = typeof raw.activeId === "string" && seen.has(raw.activeId) ? raw.activeId : (store.profiles[0]?.id ?? "");
+  return store;
+}
+
+function saveUnreadable(text: string) {
+  // Keep a copy of anything we can't read rather than silently overwriting it.
+  try {
+    localStorage.setItem(BACKUP_KEY, text);
+  } catch {
+    /* storage full or blocked */
+  }
+}
+
+export function loadStore(): Store {
+  let text: string | null = null;
+  let legacy: string | null = null;
+  try {
+    text = localStorage.getItem(STORE_KEY);
+    legacy = localStorage.getItem(LEGACY_KEY);
+  } catch {
+    return emptyStore();
+  }
+
+  if (text !== null) {
+    try {
+      return sanitizeStore(JSON.parse(text));
+    } catch {
+      saveUnreadable(text);
+      return emptyStore();
+    }
+  }
+
+  // Before profiles existed, the app kept one person's data under a single key.
+  // That person becomes the first profile, with everything they had intact.
+  if (legacy !== null) {
+    try {
+      const state = sanitize(JSON.parse(legacy));
+      state.settings.fastingDays = true;
+      state.settings.ownGymPhotos = true;
+      return addProfile(emptyStore(), { id: newId(), name: "Me", createdAt: new Date().toISOString(), state });
+    } catch {
+      saveUnreadable(legacy);
+    }
+  }
+  return emptyStore();
+}
+
+export function useStore() {
+  const [store, setStore] = useState<Store>(loadStore);
 
   useEffect(() => {
     // Ask the browser not to clear this app's storage under pressure (no prompt on most phones).
@@ -258,11 +374,37 @@ export function useAppState() {
 
   useEffect(() => {
     try {
-      localStorage.setItem(KEY, JSON.stringify(state));
+      localStorage.setItem(STORE_KEY, JSON.stringify(store));
     } catch {
       /* private mode or storage full: the app still works for this visit */
     }
-  }, [state]);
+  }, [store]);
 
-  return [state, setState] as const;
+  const profile = store.profiles.find((p) => p.id === store.activeId) ?? null;
+
+  /** Same shape as useState's setter, but for the active profile's data. */
+  const setState = useCallback((action: React.SetStateAction<AppState>) => {
+    setStore((st) => ({
+      ...st,
+      profiles: st.profiles.map((p) =>
+        p.id === st.activeId ? { ...p, state: typeof action === "function" ? action(p.state) : action } : p,
+      ),
+    }));
+  }, []);
+
+  const actions = useMemo(
+    () => ({
+      create(name: string, state: AppState): string {
+        const id = newId();
+        setStore((st) => addProfile(st, { id, name: cleanName(name) || "Me", createdAt: new Date().toISOString(), state }));
+        return id;
+      },
+      switchTo: (id: string) => setStore((st) => (st.profiles.some((p) => p.id === id) ? { ...st, activeId: id } : st)),
+      rename: (id: string, name: string) => setStore((st) => renameProfile(st, id, name)),
+      remove: (id: string) => setStore((st) => removeProfile(st, id)),
+    }),
+    [],
+  );
+
+  return { store, profile, state: profile?.state ?? defaultState(), setState, actions };
 }

@@ -25,14 +25,15 @@ export function Gym({ state, setState }: Props) {
     <section>
       <h2>My gym</h2>
       <p className="muted">
-        Workouts only use equipment marked <strong>Have it</strong>. "Not sure" is treated as not available.
+        Workouts only use equipment marked <strong>Have it</strong>. "Not sure" is treated as not available. Changes
+        rebuild your workouts straight away; if a better exercise becomes possible, you'll see it on the Workout tab.
       </p>
 
       <ul className="equipment">
         {EQUIPMENT.map((e) => (
           <li key={e.id}>
             <div className="equipment__top">
-              {e.photos?.[0] && <img className="equipment__photo" src={base + e.photos[0]} alt={`${e.name} at your gym`} loading="lazy" />}
+              {e.photos?.[0] && <img className="equipment__photo" src={base + e.photos[0]} alt={`${e.name}${state.settings.ownGymPhotos ? " at your gym" : " (example photo)"}`} loading="lazy" />}
               <div className="equipment__name">
                 {e.name}
                 {e.notes && <span className="muted small block">{e.notes}</span>}

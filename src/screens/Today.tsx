@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ExerciseCard } from "../components/ExerciseCard";
+import { SwapSheet } from "../components/SwapSheet";
 import { EXERCISES_BY_ID } from "../data/exercises";
 import { PLANS_BY_ID, findSession } from "../data/plans";
 import { WEEK_ORDER, WEEKDAY_NAMES, dateForWeekday, toISODate } from "../lib/dates";
@@ -66,14 +67,84 @@ export function Today({ state, setState, onAnswerEquipment, onStartRest }: Props
     });
   };
 
+  const isLogged = (e: ExerciseLog | undefined) =>
+    !!e && e.sets.some((x) => x.done || x.weight != null || x.reps != null);
+
   const resolved =
     session?.slots.map((slot) => {
-      const resolution = resolveSlot(slot, state.equipment, { elbowFriendly: state.settings.elbowFriendly });
+      const logged = log?.entries[slot.id];
+      const resolution = resolveSlot(slot, state.equipment, {
+        elbowFriendly: state.settings.elbowFriendly,
+        choice: log?.swaps?.[slot.id] ?? state.swaps[slot.id] ?? null,
+        pinned: isLogged(logged) ? logged!.exerciseId : null,
+      });
       const ex = resolution.kind === "assigned" ? resolution.exercise : null;
-      const entry = ex && log?.entries[slot.id]?.exerciseId === ex.id ? log.entries[slot.id] : undefined;
+      const entry = ex && logged?.exerciseId === ex.id ? logged : undefined;
       const prev = ex ? previousPerformance(state.logs, ex.id, dateKey) : null;
       return { slot, resolution, entry, prev, suggestion: ex ? suggest(ex, slot, prev) : null };
     }) ?? [];
+
+  // ── Swapping ────────────────────────────────────────────────────────
+  const [swapSlotId, setSwapSlotId] = useState<string | null>(null);
+  const swapTarget = resolved.find((r) => r.slot.id === swapSlotId) ?? null;
+  const usedIds = new Set(
+    resolved
+      .filter((r) => r.slot.id !== swapSlotId && r.resolution.kind === "assigned")
+      .map((r) => (r.resolution.kind === "assigned" ? r.resolution.exercise.id : "")),
+  );
+  const userAction = useRef(false);
+
+  const applySwap = (slotId: string, exerciseId: string | null, always: boolean) => {
+    userAction.current = true;
+    const current = log?.entries[slotId];
+    const discard = isLogged(current) && current!.exerciseId !== exerciseId;
+    if (discard && current!.sets.some((x) => x.done) && !confirm("This removes the sets you logged for this exercise today. Swap anyway?")) {
+      userAction.current = false;
+      return;
+    }
+    setState((st) => {
+      const day = st.logs[dateKey] ?? { date: dateKey, planId: plan.id, sessionId: session!.id, entries: {} };
+      const entries = { ...day.entries };
+      if (discard) delete entries[slotId];
+      const todays = { ...(day.swaps ?? {}) };
+      const saved = { ...st.swaps };
+      delete todays[slotId];
+      if (exerciseId === null) {
+        delete saved[slotId];
+      } else if (always) {
+        saved[slotId] = exerciseId;
+      } else {
+        todays[slotId] = exerciseId;
+      }
+      const next = { ...day, entries, ...(Object.keys(todays).length ? { swaps: todays } : { swaps: undefined }) };
+      return { ...st, swaps: saved, logs: { ...st.logs, [dateKey]: next } };
+    });
+    setSwapSlotId(null);
+  };
+
+  // ── "Workout updated" notice ────────────────────────────────────────
+  // The workout rebuilds itself whenever equipment changes. Say what changed,
+  // so it never shifts under the user's thumb without explanation.
+  const signature = resolved.map((r) => `${r.slot.id}:${r.resolution.kind === "assigned" ? r.resolution.exercise.id : "-"}`).join("|");
+  const sessionKey = `${dateKey}/${session?.id ?? ""}`;
+  const lastSeen = useRef<{ key: string; map: Record<string, string> } | null>(null);
+  const [changes, setChanges] = useState<string[]>([]);
+  useEffect(() => {
+    const map: Record<string, string> = {};
+    for (const r of resolved) map[r.slot.id] = r.resolution.kind === "assigned" ? r.resolution.exercise.name : "";
+    const before = lastSeen.current;
+    if (before && before.key === sessionKey && !userAction.current) {
+      const diff = Object.keys(map)
+        .filter((id) => before.map[id] !== undefined && before.map[id] !== map[id])
+        .map((id) => `${before.map[id] || "Nothing"} → ${map[id] || "nothing"}`);
+      if (diff.length) setChanges(diff);
+    } else if (!before || before.key !== sessionKey) {
+      setChanges([]);
+    }
+    userAction.current = false;
+    lastSeen.current = { key: sessionKey, map };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [signature, sessionKey]);
 
   const required = resolved.filter((r) => r.resolution.kind === "assigned" && !r.slot.optional);
   const totalSets = required.reduce((n, r) => n + r.slot.sets, 0);
@@ -84,7 +155,7 @@ export function Today({ state, setState, onAnswerEquipment, onStartRest }: Props
   )?.slot.id;
   const setSetting = (patch: Partial<AppState["settings"]>) =>
     setState((s) => ({ ...s, settings: { ...s.settings, ...patch } }));
-  const fastingDay = day === 3 || day === 5;
+  const fastingDay = state.settings.fastingDays && (day === 3 || day === 5);
 
   return (
     <section>
@@ -122,7 +193,7 @@ export function Today({ state, setState, onAnswerEquipment, onStartRest }: Props
         <aside className="safety">
           <p>
             <strong>Stop any exercise</strong> that causes an electric-shock feeling, tingling, numbness or pain,
-            especially around the left elbow. If it keeps coming back, get it checked by a doctor or physio. Get help
+            {state.settings.elbowFriendly ? "especially around the elbow. " : ""}If it keeps coming back, get it checked by a doctor or physio. Get help
             promptly for numbness that won't go away, weakness, trouble moving your fingers, major swelling or severe
             pain.
           </p>
@@ -159,7 +230,7 @@ export function Today({ state, setState, onAnswerEquipment, onStartRest }: Props
         <aside className="prompt">
           <p>
             <strong>Show exercise photos?</strong> Start/finish demo photos load from the internet (free) and are saved
-            for offline use once you've seen them. Your own gym photos always show.
+            for offline use once you've seen them. {state.settings.ownGymPhotos ? "Your own gym photos always show." : "Example machine photos always show."}
           </p>
           <div className="btnrow">
             <button type="button" className="btn btn--small" onClick={() => setSetting({ showDemoPhotos: true, photoPromptSeen: true })}>
@@ -202,6 +273,20 @@ export function Today({ state, setState, onAnswerEquipment, onStartRest }: Props
 
       {log?.finishedAt && <Summary state={state} log={log} />}
 
+      {changes.length > 0 && (
+        <aside className="note note--update" role="status">
+          <strong>Workout updated for your equipment</strong>
+          <ul>
+            {changes.map((c) => (
+              <li key={c}>{c}</li>
+            ))}
+          </ul>
+          <button type="button" className="linkbtn" onClick={() => setChanges([])}>
+            OK
+          </button>
+        </aside>
+      )}
+
       <div className="cards">
         {resolved.map(({ slot, resolution, entry, prev, suggestion }) => (
           <ExerciseCard
@@ -226,10 +311,27 @@ export function Today({ state, setState, onAnswerEquipment, onStartRest }: Props
             onSymptom={(flag) =>
               resolution.kind === "assigned" && updateEntry(slot.id, resolution.exercise.id, (e) => ({ ...e, symptom: flag }))
             }
+            onSwap={() => setSwapSlotId(slot.id)}
             onAnswerEquipment={onAnswerEquipment}
           />
         ))}
       </div>
+
+      {swapTarget && (
+        <SwapSheet
+          slot={swapTarget.slot}
+          current={swapTarget.resolution.kind === "assigned" ? swapTarget.resolution.exercise : null}
+          inventory={state.equipment}
+          elbowFriendly={state.settings.elbowFriendly}
+          usedIds={usedIds}
+          hasLogged={isLogged(log?.entries[swapTarget.slot.id])}
+          isSwapped={swapTarget.resolution.kind === "assigned" && swapTarget.resolution.source !== "plan"}
+          onPick={(id, always) => applySwap(swapTarget.slot.id, id, always)}
+          onReset={() => applySwap(swapTarget.slot.id, null, false)}
+          onAnswerEquipment={onAnswerEquipment}
+          onClose={() => setSwapSlotId(null)}
+        />
+      )}
 
       {session && (
         <div className="finish">

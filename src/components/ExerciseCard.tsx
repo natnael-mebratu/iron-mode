@@ -21,6 +21,8 @@ interface Props {
   /** Called after a set is ticked done, to start the rest timer. */
   onSetDone: () => void;
   onSymptom: (flag: boolean) => void;
+  /** Open the swap sheet for this slot. */
+  onSwap: () => void;
   onAnswerEquipment: (id: string, value: Availability) => void;
 }
 
@@ -34,7 +36,7 @@ const parse = (v: string): number | null => {
 };
 
 export function ExerciseCard(props: Props) {
-  const { slot, resolution, entry, prev, suggestion, showDemo, upNext, onSetChange, onSetDone, onSymptom, onAnswerEquipment } =
+  const { slot, resolution, entry, prev, suggestion, showDemo, upNext, onSetChange, onSetDone, onSymptom, onSwap, onAnswerEquipment } =
     props;
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -50,11 +52,14 @@ export function ExerciseCard(props: Props) {
         {resolution.askAbout.length > 0 && (
           <AskEquipment equipmentId={resolution.askAbout[0]} prompt="This would unlock it." onAnswer={onAnswerEquipment} />
         )}
+        <button type="button" className="btn btn--small btn--ghost swapbtn" onClick={onSwap}>
+          ⇄ Choose an exercise
+        </button>
       </article>
     );
   }
 
-  const { exercise, isSubstitute, askAbout } = resolution;
+  const { exercise, isSubstitute, askAbout, source } = resolution;
   const load = exercise.load ?? "weight";
   const sets: SetEntry[] = Array.from(
     { length: Math.max(slot.sets, entry?.sets.length ?? 0) },
@@ -114,6 +119,7 @@ export function ExerciseCard(props: Props) {
         <div className="card__summary">
           <h3>{exercise.name}</h3>
           <div className="badges">
+            {source !== "plan" && <span className="badge badge--sub">Swapped</span>}
             {isSubstitute && <span className="badge badge--sub">Substitute</span>}
             {slot.optional && <span className="badge">Optional</span>}
             <ExerciseBadges exercise={exercise} />
@@ -209,6 +215,9 @@ export function ExerciseCard(props: Props) {
           onClick={() => onSetChange(sets.length, { weight: null, reps: null, done: false })}
         >
           + Add set
+        </button>
+        <button type="button" className="linkbtn linkbtn--swap" onClick={onSwap}>
+          ⇄ Swap exercise
         </button>
         <button
           type="button"
