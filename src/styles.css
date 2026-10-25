@@ -1746,3 +1746,23 @@ body.noscroll {
   text-align: center;
   margin-top: 20px;
 }
+
+.checks {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0;
+  display: grid;
+  gap: 8px;
+}
+
+.checks li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.checks li > span:first-child {
+  font-weight: 900;
+  width: 1.2em;
+  text-align: center;
+}

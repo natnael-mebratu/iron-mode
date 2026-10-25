@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { InstallEnv } from "../lib/install";
+import { InstallDiagnostics } from "./InstallDiagnostics";
 
 interface Props {
   env: InstallEnv;
@@ -105,6 +106,8 @@ export function InstallCard({ env, canPrompt, onInstall }: Props) {
       {env === "desktop" && !canPrompt && (
         <p className="small">In Chrome or Edge, use the install icon in the address bar, or the menu → Install.</p>
       )}
+
+      <InstallDiagnostics env={env} canPrompt={canPrompt} />
 
       <p className="muted tiny">
         You can also just keep using it in the browser. Installing only adds the home-screen icon and full-screen mode.
