@@ -189,6 +189,10 @@ export const TECHNIQUE: Record<string, Technique> = {
   },
 
   // Quads
+  "plate-machine-squat": {
+    feel: "Front of the thighs and glutes. Lower-back strain means you're going too deep or losing your brace.",
+    tips: ["Brace first: breathe in and tighten the stomach before you go down.", "Knees follow the line of your toes; push them out, don't let them cave.", "Depth you can control beats depth you can't: stop where your lower back stays flat.", "Push through the middle of the foot and stand up without locking the knees hard."],
+  },
   "leg-press": {
     feel: "Front of the thighs and glutes. Lower-back pressure means you're going too deep for your hips.",
     tips: ["Lower back and hips stay pressed into the pad. Only go as deep as you can without the hips curling up.", "Knees track in line with the toes; don't let them cave in.", "Push through the whole foot, mostly mid-foot.", "Stop just short of locking the knees at the top."],

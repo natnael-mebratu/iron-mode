@@ -29,7 +29,9 @@ the written setup/cues.
 | `preacher-bench.jpg` | Preacher bench with EZ bar | Preacher curls, spider curl, EZ-bar exercises |
 | `bench-press-station.jpg` | Flat bench press station | Barbell bench press |
 | `incline-bench-station.jpg` | Incline bench press station | (Library only) |
-| `lying-leg-curl.jpg` | Padded bench with hip notch, T-handle and two ankle rollers: **looks like a lying leg curl machine** (the app asks you to confirm) | Lying leg curl |
+| `lying-leg-curl.jpg` | Lying leg curl machine (confirmed) | Lying leg curl |
+| `leg-extension.jpg` | Plate-loaded leg extension (sticker reads LEG EXTENSION) | Leg extension |
+| `plate-squat-machine.jpg` | Plate-loaded squat machine: two lever arms, plate pegs, low handles (confirmed) | Plate-loaded machine squat |
 | `mystery-plate-machine.jpg` | Plate-loaded machine with seat, thigh roller and foot plate: **seated calf raise** | Seated calf raise |
 
 ## Exercises

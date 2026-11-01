@@ -1,5 +1,5 @@
 import { PRESETS_BY_ID } from "../data/presets";
-import { defaultState, type AppState } from "./storage";
+import { applyGymUpdates, defaultState, type AppState } from "./storage";
 
 export interface NewProfileOptions {
   /** A gym preset id, or "copy:<profileId>" to reuse another profile's gym. */
@@ -25,5 +25,6 @@ export function newProfileState(opts: NewProfileOptions, others: { id: string; s
   const preset = PRESETS_BY_ID.get(opts.gym) ?? PRESETS_BY_ID.get("later")!;
   state.equipment = preset.build();
   state.settings.ownGymPhotos = preset.ownPhotos;
+  applyGymUpdates(state);
   return state;
 }

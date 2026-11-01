@@ -37,6 +37,7 @@ const CURRENT_SPLIT: Plan = {
       name: "Legs A (quads) + Abs",
       focus: "Quads, hamstrings, calves, abs",
       slots: [
+        slot("la-squat", ["plate-machine-squat", "goblet-squat"], 3, "8–12", 150, { note: "Main lift. Start light and add weight slowly." }),
         slot("la-press", ["leg-press"], 3, "10–12", 150),
         slot("la-ext", ["leg-extension"], 3, "12–15", 90),
         slot("la-rdl", ["lying-leg-curl", "rope-pull-through", "barbell-rdl", "towel-slider-curl", "db-rdl"], 3, "8–12", 120, {
@@ -153,7 +154,8 @@ const PPL_3_DAY: Plan = {
       name: "Legs",
       focus: "Quads, hamstrings, glutes, calves (abs optional)",
       slots: [
-        slot("ppl-legs-press", ["leg-press"], 3, "10–12", 150),
+        slot("ppl-legs-squat", ["plate-machine-squat", "goblet-squat"], 3, "8–12", 150),
+        slot("ppl-legs-press", ["leg-press"], 2, "10–12", 150),
         slot("ppl-legs-rdl", ["lying-leg-curl", "rope-pull-through", "barbell-rdl", "towel-slider-curl", "db-rdl"], 3, "8–12", 120),
         slot("ppl-legs-ext", ["leg-extension"], 3, "12–15", 90),
         slot("ppl-legs-thrust", ["barbell-hip-thrust", "single-leg-glute-bridge"], 2, "8–12", 120, { optional: true }),

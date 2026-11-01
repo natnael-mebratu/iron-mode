@@ -40,7 +40,27 @@ export const EQUIPMENT: Equipment[] = [
     notes: "Adjustable-height pulley with a rope.",
   },
   { id: "leg-press", name: "Leg press machine", defaultAvailability: "available" },
-  { id: "leg-extension", name: "Leg extension machine", defaultAvailability: "available" },
+  {
+    id: "leg-extension",
+    name: "Leg extension machine (plate-loaded)",
+    defaultAvailability: "available",
+    notes: "The sticker on the machine reads LEG EXTENSION.",
+    photos: ["equipment/leg-extension.jpg"],
+  },
+  {
+    id: "lying-leg-curl",
+    name: "Lying leg curl machine",
+    defaultAvailability: "available",
+    notes: "Padded bench with a hip notch, T-handle and two ankle rollers.",
+    photos: ["equipment/lying-leg-curl.jpg"],
+  },
+  {
+    id: "plate-squat",
+    name: "Plate-loaded squat machine",
+    defaultAvailability: "available",
+    notes: "Two lever arms with plate pegs and low handles.",
+    photos: ["equipment/plate-squat-machine.jpg"],
+  },
   {
     id: "preacher-curl",
     name: "Preacher curl bench",
@@ -85,13 +105,7 @@ export const EQUIPMENT: Equipment[] = [
   // Not confirmed
   { id: "cable-handle", name: "Cable single handle (D-handle)", defaultAvailability: "unknown" },
   { id: "cable-straight-bar", name: "Cable straight-bar attachment", defaultAvailability: "unknown" },
-  {
-    id: "lying-leg-curl",
-    name: "Lying leg curl machine",
-    defaultAvailability: "unknown",
-    notes: "Your photo 6 looks like this: padded bench with a hip notch, a T-handle and two ankle rollers. Is it?",
-    photos: ["equipment/lying-leg-curl.jpg"],
-  },
+
   { id: "smith", name: "Smith machine", defaultAvailability: "unknown" },
   { id: "pull-up-bar", name: "Pull-up bar", defaultAvailability: "unknown" },
   { id: "back-extension", name: "45° back extension bench", defaultAvailability: "unknown" },

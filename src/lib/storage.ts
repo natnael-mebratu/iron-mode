@@ -77,6 +77,8 @@ export interface Settings {
   lastBackupAt: string | null;
   /** Don't show the backup reminder until this date (YYYY-MM-DD). */
   backupSnoozedUntil: string | null;
+  /** Gym updates already applied to this profile (see GYM_UPDATES). */
+  gymUpdates: string[];
 }
 
 export interface ExerciseNote {
@@ -140,6 +142,7 @@ export function defaultState(): AppState {
       plates: [...DEFAULT_PLATES],
       lastBackupAt: null,
       backupSnoozedUntil: null,
+      gymUpdates: [],
     },
   };
 }
@@ -217,6 +220,25 @@ function sanitizeLog(date: string, raw: unknown): WorkoutLog | null {
   const extras = sanitizeExtras(raw.extras);
   if (extras.length) log.extras = extras;
   return log;
+}
+
+/**
+ * Equipment the gym's owner has confirmed since earlier versions of the app.
+ * Applied once, and only to profiles whose gym is the one the app was built
+ * around, so the workout rebuilds itself without anyone having to tap "Yes".
+ * Anything the user already answered is left alone.
+ */
+const GYM_UPDATES: { id: string; available: string[] }[] = [
+  { id: "2026-11-curl-and-squat", available: ["lying-leg-curl", "plate-squat", "leg-extension"] },
+];
+
+export function applyGymUpdates(state: AppState): void {
+  if (!state.settings.ownGymPhotos) return;
+  for (const update of GYM_UPDATES) {
+    if (state.settings.gymUpdates.includes(update.id)) continue;
+    for (const id of update.available) if (state.equipment[id] === "unknown") state.equipment[id] = "available";
+    state.settings.gymUpdates.push(update.id);
+  }
 }
 
 /** Version 1 kept set ticks per date and slot, without plan or session. */
@@ -309,7 +331,13 @@ export function sanitize(raw: unknown): AppState {
     plates: sanitizePlates(s.plates),
     lastBackupAt: typeof s.lastBackupAt === "string" ? s.lastBackupAt : null,
     backupSnoozedUntil: typeof s.backupSnoozedUntil === "string" && DATE_RE.test(s.backupSnoozedUntil) ? s.backupSnoozedUntil : null,
+    gymUpdates: stringList(s.gymUpdates),
   };
+  // Equipment added to the app after this profile was saved: someone with their own gym has to confirm it,
+  // so it starts as "not sure" rather than inheriting this gym's defaults.
+  if (isRecord(raw.equipment) && raw.version === 2 && !state.settings.ownGymPhotos) {
+    for (const e of EQUIPMENT) if (!(e.id in raw.equipment)) state.equipment[e.id] = "unknown";
+  }
   state.swaps = stringMap(raw.swaps);
   if (isRecord(raw.ratings)) {
     for (const [id, v] of Object.entries(raw.ratings)) {
@@ -317,6 +345,7 @@ export function sanitize(raw: unknown): AppState {
     }
   }
   state.avoided = stringList(raw.avoided);
+  applyGymUpdates(state);
   if (isRecord(raw.exerciseNotes)) {
     for (const [id, v] of Object.entries(raw.exerciseNotes)) {
       if (!isRecord(v)) continue;
@@ -445,6 +474,7 @@ export function loadStore(): Store {
       const state = sanitize(JSON.parse(legacy));
       state.settings.fastingDays = true;
       state.settings.ownGymPhotos = true;
+      applyGymUpdates(state);
       return addProfile(emptyStore(), { id: newId(), name: "Me", createdAt: new Date().toISOString(), state });
     } catch {
       saveUnreadable(legacy);

@@ -7,6 +7,7 @@ import { platesFor, takesPlates, defaultBase } from "./plates";
 import { exerciseHistory, personalBest } from "./progression";
 import { rankAlternatives } from "./rank";
 import { alternativesFor, resolveSlot } from "./resolve";
+import { newProfileState } from "./newProfile";
 import { defaultEquipment, defaultState, mergeStates, sanitize, type WorkoutLog } from "./storage";
 import { backupDue, weekSummary } from "./summary";
 import type { Slot } from "./types";
@@ -41,9 +42,14 @@ describe("plan changes from the user's feedback", () => {
     }
   });
 
-  it("uses the lying leg curl for hamstrings once it's confirmed", () => {
-    expect(id(resolveSlot(slotById("la-rdl"), inventory))).toBe("lying-leg-curl");
-    expect(id(resolveSlot(slotById("la-rdl"), defaultEquipment()))).toBe("rope-pull-through");
+  it("uses the lying leg curl for hamstrings, falling back to the cable if it's marked missing", () => {
+    expect(id(resolveSlot(slotById("la-rdl"), defaultEquipment()))).toBe("lying-leg-curl");
+    expect(id(resolveSlot(slotById("la-rdl"), { ...defaultEquipment(), "lying-leg-curl": "unavailable" }))).toBe("rope-pull-through");
+  });
+
+  it("the plate-loaded squat machine leads the leg days", () => {
+    for (const slotId of ["la-squat", "ppl-legs-squat"]) expect(id(resolveSlot(slotById(slotId), defaultEquipment()))).toBe("plate-machine-squat");
+    expect(id(resolveSlot(slotById("la-squat"), { ...defaultEquipment(), "plate-squat": "unavailable" }))).toBe("goblet-squat");
   });
 
   it("abs are trained on three separate days of each plan, not added as an extra session", () => {
@@ -67,7 +73,8 @@ describe("not for me", () => {
   const rdl = slotById("la-rdl");
 
   it("never picks an exercise the user has marked as not for them", () => {
-    const avoided = new Set(["rope-pull-through"]);
+    const avoided = new Set(["lying-leg-curl", "rope-pull-through"]);
+    expect(id(resolveSlot(rdl, defaultEquipment(), { avoided: new Set(["lying-leg-curl"]) }))).toBe("rope-pull-through");
     expect(id(resolveSlot(rdl, defaultEquipment(), { avoided }))).toBe("barbell-rdl");
     expect(id(resolveSlot(rdl, defaultEquipment(), { choice: "rope-pull-through", avoided }))).toBe("barbell-rdl");
   });
@@ -338,5 +345,43 @@ describe("weekly summary and backup reminder", () => {
     expect(backupDue(saved, now)).toBe(true);
     saved.settings.backupSnoozedUntil = "2026-11-20";
     expect(backupDue(saved, now)).toBe(false);
+  });
+});
+
+describe("gym confirmed by the owner is applied once, only to their gym", () => {
+  const oldSave = (own: boolean) => ({
+    version: 2,
+    // A profile saved before the lying leg curl and squat machine were confirmed.
+    equipment: { "lying-leg-curl": "unknown", "chest-press": "available" },
+    settings: { ownGymPhotos: own },
+  });
+
+  it("turns the confirmed machines on for the original gym's profile, once", () => {
+    const s = sanitize(oldSave(true));
+    expect(s.equipment["lying-leg-curl"]).toBe("available");
+    expect(s.equipment["plate-squat"]).toBe("available");
+    expect(s.settings.gymUpdates).toContain("2026-11-curl-and-squat");
+  });
+
+  it("does not undo a later 'not sure' or 'don't have' answer", () => {
+    const first = sanitize(oldSave(true));
+    first.equipment["lying-leg-curl"] = "unavailable";
+    first.equipment["plate-squat"] = "unknown";
+    const again = sanitize(JSON.parse(JSON.stringify(first)));
+    expect(again.equipment["lying-leg-curl"]).toBe("unavailable");
+    expect(again.equipment["plate-squat"]).toBe("unknown");
+  });
+
+  it("leaves other people's gyms alone: new equipment starts as 'not sure'", () => {
+    const s = sanitize(oldSave(false));
+    expect(s.equipment["lying-leg-curl"]).toBe("unknown");
+    expect(s.equipment["plate-squat"]).toBe("unknown");
+    expect(s.settings.gymUpdates).toEqual([]);
+  });
+
+  it("new people who pick the original gym get the confirmed machines straight away", () => {
+    const s = newProfileState({ gym: "original", elbowFriendly: false, fastingDays: false });
+    expect(s.equipment["lying-leg-curl"]).toBe("available");
+    expect(s.equipment["plate-squat"]).toBe("available");
   });
 });

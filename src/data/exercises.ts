@@ -575,6 +575,18 @@ export const EXERCISES: Exercise[] = [
 
   // ── Quads ─────────────────────────────────────────────────────────────
   {
+    id: "plate-machine-squat",
+    name: "Plate-loaded machine squat",
+    muscleGroup: "Quads",
+    targetMuscles: ["Quads", "Glutes", "Adductors"],
+    why: "A guided squat: the machine holds the path, so you can push hard through the legs without balancing a bar. Your favourite.",
+    equipmentIds: ["plate-squat"],
+    setup: "Step into the machine and set it up as shown on its sticker. Start light (about 20 kg of plates) to learn the path.",
+    formCues: ["Brace your stomach before each rep", "Lower until your thighs are about parallel, or as deep as you can control", "Push through the middle of the foot, knees in line with the toes"],
+    commonMistakes: ["Rounding the lower back at the bottom", "Knees caving in", "Adding too much weight before the depth is good"],
+    increment: 5,
+  },
+  {
     id: "leg-press",
     name: "Leg press",
     muscleGroup: "Quads",
