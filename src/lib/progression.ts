@@ -32,6 +32,58 @@ export function previousPerformance(
   return null;
 }
 
+export interface HistoryEntry {
+  date: string;
+  sets: SetEntry[];
+  /** Heaviest completed weight in this session (0 if bodyweight). */
+  topWeight: number;
+  volume: number;
+  symptom: boolean;
+}
+
+/** The last few sessions of an exercise before `beforeDate`, newest first. */
+export function exerciseHistory(
+  logs: Record<string, WorkoutLog>,
+  exerciseId: string,
+  beforeDate: string,
+  limit = 6,
+): HistoryEntry[] {
+  const out: HistoryEntry[] = [];
+  for (const date of Object.keys(logs).filter((d) => d < beforeDate).sort().reverse()) {
+    for (const entry of Object.values(logs[date].entries)) {
+      if (entry.exerciseId !== exerciseId) continue;
+      const done = entry.sets.filter((x) => x.done);
+      if (!done.length) continue;
+      out.push({
+        date,
+        sets: done,
+        topWeight: Math.max(0, ...done.map((x) => x.weight ?? 0)),
+        volume: done.reduce((n, x) => n + (x.weight ?? 0) * (x.reps ?? 0), 0),
+        symptom: !!entry.symptom,
+      });
+      break;
+    }
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
+/** The heaviest set ever logged for this exercise (before `beforeDate`), if any. */
+export function personalBest(logs: Record<string, WorkoutLog>, exerciseId: string, beforeDate: string): { weight: number; reps: number; date: string } | null {
+  let best: { weight: number; reps: number; date: string } | null = null;
+  for (const [date, log] of Object.entries(logs)) {
+    if (date >= beforeDate) continue;
+    for (const e of Object.values(log.entries)) {
+      if (e.exerciseId !== exerciseId) continue;
+      for (const x of e.sets) {
+        if (!x.done || !x.weight) continue;
+        if (!best || x.weight > best.weight || (x.weight === best.weight && (x.reps ?? 0) > best.reps)) best = { weight: x.weight, reps: x.reps ?? 0, date };
+      }
+    }
+  }
+  return best;
+}
+
 const round = (n: number, step: number) => Math.round(n / step) * step;
 
 export interface Suggestion {

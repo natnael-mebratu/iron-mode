@@ -7,6 +7,7 @@ import type { Availability, Slot } from "../lib/types";
 import { AskEquipment } from "./AskEquipment";
 import { ExerciseBadges, ExerciseDetails } from "./ExerciseDetails";
 import { ExerciseThumb } from "./ExerciseImage";
+import { RatingStars } from "./RatingStars";
 
 interface Props {
   slot: Slot;
@@ -17,12 +18,30 @@ interface Props {
   showDemo: boolean;
   /** Highlight as the next exercise to do. */
   upNext?: boolean;
+  /** Added to today's workout by the user rather than part of the plan. */
+  extra: boolean;
+  skipped: boolean;
+  rating: number;
+  note?: string;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
+  /** The exercise uses a bar or plate-loaded machine. */
+  takesPlates: boolean;
+  hasHistory: boolean;
   onSetChange: (index: number, set: SetEntry) => void;
   /** Called after a set is ticked done, to start the rest timer. */
   onSetDone: () => void;
   onSymptom: (flag: boolean) => void;
   /** Open the swap sheet for this slot. */
   onSwap: () => void;
+  onRate: (stars: number) => void;
+  onDislike: () => void;
+  onHistory: () => void;
+  onNotes: () => void;
+  onPlates: () => void;
+  onSkip: (skip: boolean) => void;
+  onMove: (dir: -1 | 1) => void;
+  onRemove: () => void;
   onAnswerEquipment: (id: string, value: Availability) => void;
 }
 
@@ -36,10 +55,14 @@ const parse = (v: string): number | null => {
 };
 
 export function ExerciseCard(props: Props) {
-  const { slot, resolution, entry, prev, suggestion, showDemo, upNext, onSetChange, onSetDone, onSymptom, onSwap, onAnswerEquipment } =
-    props;
+  const {
+    slot, resolution, entry, prev, suggestion, showDemo, upNext, extra, skipped, rating, note, canMoveUp, canMoveDown,
+    takesPlates, hasHistory, onSetChange, onSetDone, onSymptom, onSwap, onRate, onDislike, onHistory, onNotes, onPlates,
+    onSkip, onMove, onRemove, onAnswerEquipment,
+  } = props;
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [more, setMore] = useState(false);
 
   if (resolution.kind === "blocked") {
     return (
@@ -60,6 +83,26 @@ export function ExerciseCard(props: Props) {
   }
 
   const { exercise, isSubstitute, askAbout, source } = resolution;
+
+  if (skipped) {
+    return (
+      <article className="card card--compact card--skipped">
+        <div className="compact">
+          <span className="compact__check compact__check--skip" aria-hidden="true">
+            –
+          </span>
+          <span className="compact__body">
+            <strong>{exercise.name}</strong>
+            <span className="muted small block">Skipped today</span>
+          </span>
+          <button type="button" className="linkbtn" onClick={() => onSkip(false)}>
+            Undo
+          </button>
+        </div>
+      </article>
+    );
+  }
+
   const load = exercise.load ?? "weight";
   const sets: SetEntry[] = Array.from(
     { length: Math.max(slot.sets, entry?.sets.length ?? 0) },
@@ -109,6 +152,10 @@ export function ExerciseCard(props: Props) {
     onSetDone();
   };
 
+  const lastLine = prev
+    ? `Last time: ${prev.log.sets.filter((s) => s.done).map((s) => formatSet(s, exercise)).join(", ")}`
+    : "First time on this exercise";
+
   return (
     <article
       className={`card${complete ? " card--done" : ""}${entry?.symptom ? " card--symptom" : ""}${upNext ? " card--next" : ""}`}
@@ -119,6 +166,7 @@ export function ExerciseCard(props: Props) {
         <div className="card__summary">
           <h3>{exercise.name}</h3>
           <div className="badges">
+            {extra && <span className="badge badge--sub">Added</span>}
             {source !== "plan" && <span className="badge badge--sub">Swapped</span>}
             {isSubstitute && <span className="badge badge--sub">Substitute</span>}
             {slot.optional && <span className="badge">Optional</span>}
@@ -148,12 +196,22 @@ export function ExerciseCard(props: Props) {
         </ul>
       )}
 
-      {suggestion && (
-        <p className={`hint hint--${suggestion.kind}`}>
-          {suggestion.message}
-          {prev && <span className="muted"> Last time: {prev.log.sets.filter((s) => s.done).map((s) => formatSet(s, exercise)).join(", ")}.</span>}
-        </p>
+      {note && (
+        <button type="button" className="notechip" onClick={onNotes}>
+          📝 {note}
+        </button>
       )}
+
+      {suggestion && <p className={`hint hint--${suggestion.kind}`}>{suggestion.message}</p>}
+
+      <button type="button" className="historybtn" onClick={onHistory}>
+        <span aria-hidden="true">🕘</span>
+        <span className="historybtn__text">
+          <strong>{hasHistory ? "See what you lifted before" : "No history yet"}</strong>
+          <span className="muted small block">{lastLine}</span>
+        </span>
+        <span aria-hidden="true">›</span>
+      </button>
 
       <div className="setgrid" role="table" aria-label={`Sets for ${exercise.name}`}>
         <div className="setgrid__head" role="row">
@@ -208,6 +266,7 @@ export function ExerciseCard(props: Props) {
           );
         })}
       </div>
+
       <div className="card__foot">
         <button
           type="button"
@@ -233,6 +292,52 @@ export function ExerciseCard(props: Props) {
           Stop this exercise for today; don't push through it. The app won't suggest a heavier weight next time. If it
           keeps happening, get it checked by a doctor or physio.
         </p>
+      )}
+
+      <div className="ratingrow">
+        <RatingStars value={rating} onChange={onRate} label={`Rate ${exercise.name}`} />
+        <button type="button" className="linkbtn linkbtn--hate" onClick={onDislike}>
+          👎 Not for me
+        </button>
+      </div>
+      {rating > 0 && rating <= 2 && (
+        <p className="hint hint--caution">
+          Not feeling this one?{" "}
+          <button type="button" className="linkbtn" onClick={onDislike}>
+            See better matches
+          </button>
+        </p>
+      )}
+
+      <button type="button" className="linkbtn morebtn" aria-expanded={more} onClick={() => setMore((m) => !m)}>
+        ⋯ {more ? "Less" : "More"}
+      </button>
+      {more && (
+        <div className="morepanel">
+          {takesPlates && (
+            <button type="button" className="btn btn--small btn--ghost" onClick={onPlates}>
+              ⚖ Plate calculator
+            </button>
+          )}
+          <button type="button" className="btn btn--small btn--ghost" onClick={onNotes}>
+            📝 {note ? "Edit machine notes" : "Add machine notes"}
+          </button>
+          <button type="button" className="btn btn--small btn--ghost" disabled={!canMoveUp} onClick={() => onMove(-1)}>
+            ↑ Move up
+          </button>
+          <button type="button" className="btn btn--small btn--ghost" disabled={!canMoveDown} onClick={() => onMove(1)}>
+            ↓ Move down
+          </button>
+          {extra ? (
+            <button type="button" className="btn btn--small btn--ghost" onClick={onRemove}>
+              ✕ Remove from today
+            </button>
+          ) : (
+            <button type="button" className="btn btn--small btn--ghost" onClick={() => onSkip(true)}>
+              ⤼ Skip today
+            </button>
+          )}
+        </div>
       )}
 
       {askAbout.length > 0 && (

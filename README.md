@@ -24,6 +24,18 @@ subscription.
 - Rest day but want to train? Pick any session for today; your weekly plan
   doesn't change and the log keeps that session.
 
+**Rate, hide and review**
+- **Star ratings (1–5)** on every exercise. High-rated exercises are suggested first when you swap.
+- **👎 Not for me** hides an exercise for good and shows the best replacements (same muscles first). Tell it *why*
+  (hard to balance, hurts, can't feel it, just don't like it) and the suggestions adapt. Hidden exercises live under
+  Exercises → Not for me, where you can bring them back.
+- **🕘 History pop-out** on every exercise: last session's sets, personal best, recent sessions with ▲▼ trend, and a
+  one-tap "Use last time's weights".
+- **Machine notes** ("seat 4, back pad 3") stay on the exercise.
+- **Plate calculator** for bars and plate-loaded machines: type the total, see the plates for each side.
+- **Skip, reorder or add** exercises for today without touching your plan.
+- **Weekly summary** (Progress tab) and a **backup reminder** after a few workouts.
+
 **Swapping and rebuilding**
 - Every exercise has a **⇄ Swap exercise** button. Pick a replacement (same sets and reps); only exercises your gym
   can do are offered. Machine busy today? Swap just for today. Prefer another exercise? Tick **Use it every time**.
@@ -45,7 +57,7 @@ subscription.
 - Swap days without losing anything.
 
 **Exercises**
-- 64 exercises, including 16 **★ hidden gems** (lesser-known exercises chosen
+- 69 exercises, including 17 **★ hidden gems** (lesser-known exercises chosen
   for a reason; see [docs/RESEARCH.md](docs/RESEARCH.md)).
 - Filters: *At my gym*, *Hidden gems*, *All*. Items your gym lacks are labelled
   **NOT AVAILABLE AT MY GYM**.

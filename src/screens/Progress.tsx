@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { LineChart } from "../components/LineChart";
+import { WeekCard } from "../components/WeekCard";
 import { EXERCISES_BY_ID } from "../data/exercises";
 import { findSession } from "../data/plans";
 import { bodyToCSV, download, exportJSON, readBackup, setsToCSV, type ImportPreview } from "../lib/backup";
@@ -42,6 +43,7 @@ export function Progress({ state, setState }: Props) {
         </div>
       </div>
 
+      <WeekCard state={state} />
       <ExerciseProgress state={state} />
       <History logs={logs} />
       <Body state={state} setState={setState} today={today} />
@@ -291,11 +293,18 @@ function Backup({ state, setState }: Props) {
     <div className="panel">
       <h3>Backup &amp; export</h3>
       <p className="muted small">
+        {state.settings.lastBackupAt
+          ? `Last backup: ${new Date(state.settings.lastBackupAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}. `
+          : "You haven't saved a backup yet. "}
         Your data lives only on this phone, in this browser. Save a backup now and then (to Google Drive, email
         yourself, etc.) so you don't lose it if you clear the browser or change phones.
       </p>
       <div className="btnrow">
-        <button type="button" className="btn btn--small" onClick={() => exportJSON(state)}>
+        <button type="button" className="btn btn--small" onClick={() => {
+            exportJSON(state);
+            setState((s) => ({ ...s, settings: { ...s.settings, lastBackupAt: new Date().toISOString() } }));
+          }}
+        >
           Save backup (.json)
         </button>
         <button type="button" className="btn btn--small btn--ghost" onClick={() => download(`iron-mode-sets-${stamp}.csv`, setsToCSV(state), "text/csv")}>

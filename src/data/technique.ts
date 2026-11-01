@@ -231,6 +231,26 @@ export const TECHNIQUE: Record<string, Technique> = {
     feel: "Glutes and hamstrings.",
     tips: ["Hinge back with a flat back, knees soft.", "Stand up by squeezing the glutes hard.", "Arms just hold the rope; they don't pull."],
   },
+  "lying-leg-curl": {
+    feel: "Back of the thigh (hamstrings). Feeling it in the lower back means your hips have lifted off the pad.",
+    tips: ["Hips pressed into the pad the whole set. Squeeze the handles to stay down.", "Curl the heels toward your glutes, pause at the top, then lower for 2–3 seconds.", "Point the toes slightly toward the shins (flexed foot) to keep the calves from taking over.", "If your hips pop up, the weight is too heavy."],
+  },
+  "towel-slider-curl": {
+    feel: "Back of the thigh and glutes. Hips must stay high.",
+    tips: ["Bridge your hips up first and keep them up for every rep.", "Slide the heels out only as far as you can pull them back with control.", "Pull back with the hamstrings, not by dropping the hips."],
+  },
+  "barbell-rdl": {
+    feel: "Back of the thighs stretching as you lower. Lower-back burn means the back is rounding.",
+    tips: ["Hips go back like closing a car door with your backside.", "Bar slides down the legs the whole time.", "Flat back and soft knees; stop when the hamstrings are stretched."],
+  },
+  "lying-leg-raise": {
+    feel: "Lower part of the stomach. If the lower back hurts, the legs are too straight or too low.",
+    tips: ["Press the lower back into the bench and keep it there.", "Bend the knees to make it easier.", "At the top, curl the hips up slightly, then lower slowly."],
+  },
+  "hanging-knee-raise": {
+    feel: "Lower abs, plus grip and forearms.",
+    tips: ["Pull the shoulders down away from the ears before each rep.", "Curl the pelvis up, not just the knees.", "Control the way down; no swinging."],
+  },
   "single-leg-glute-bridge": {
     feel: "Glute and hamstring of the working leg.",
     tips: ["Push through the heel.", "Keep the hips level.", "Squeeze at the top for a second."],

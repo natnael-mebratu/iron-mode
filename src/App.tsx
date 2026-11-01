@@ -152,7 +152,7 @@ export default function App() {
         )}
         {tab === "plan" && <Plan state={state} setState={setState} />}
         {tab === "progress" && <Progress state={state} setState={setState} />}
-        {tab === "exercises" && <Library state={state} />}
+        {tab === "exercises" && <Library state={state} setState={setState} />}
         {tab === "gym" && <Gym state={state} setState={setState} />}
         {tab === "profile" && <Profile store={store} state={state} install={install} actions={actions} />}
       </main>

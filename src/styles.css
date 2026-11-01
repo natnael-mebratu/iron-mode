@@ -264,7 +264,12 @@ input {
 /* Cards */
 .cards {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
+}
+
+.card {
+  min-width: 0;
 }
 
 .card {
@@ -1765,4 +1770,263 @@ body.noscroll {
   font-weight: 900;
   width: 1.2em;
   text-align: center;
+}
+
+/* ── Ratings, history, notes, edits ─────────────────────────────────── */
+.stars {
+  display: flex;
+  gap: 2px;
+}
+
+.star {
+  width: 44px;
+  height: 44px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 1.7rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.star--on {
+  color: var(--accent);
+}
+
+.stars-read {
+  color: var(--accent);
+  letter-spacing: 1px;
+  font-size: 0.95rem;
+}
+
+.ratingrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.ratingrow--lib {
+  border-top: none;
+  margin-top: 6px;
+}
+
+.linkbtn--hate {
+  color: #ff9a9a;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.morebtn {
+  display: block;
+  margin: 2px 0 0;
+}
+
+.morepanel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.morepanel .btn:disabled {
+  opacity: 0.35;
+}
+
+.notechip {
+  display: block;
+  width: 100%;
+  text-align: left;
+  margin-top: 10px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px dashed var(--border);
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.historybtn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 60px;
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid #7aa2ff;
+  background: #1c2230;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.historybtn__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.historybtn__text .small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card--skipped {
+  opacity: 0.75;
+  border-style: dashed;
+}
+
+.compact__check--skip {
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.addbtn {
+  margin-top: 14px;
+}
+
+.weekline {
+  margin-top: 2px !important;
+}
+
+/* ── Sheets: history, plates, dislike ───────────────────────────────── */
+.lastsets {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 12px;
+  display: grid;
+  gap: 6px;
+}
+
+.lastsets li {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.1rem;
+}
+
+.pb {
+  margin: 4px 0 8px;
+}
+
+.sessions {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sessions li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+
+.trend {
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.trend--up {
+  color: var(--good);
+}
+
+.trend--down {
+  color: var(--warn);
+}
+
+.trend--same {
+  color: var(--muted);
+}
+
+.platefields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.platefields .field {
+  margin-top: 0;
+}
+
+.plates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 6px 0;
+}
+
+.plate {
+  display: grid;
+  place-items: center;
+  min-width: 52px;
+  height: 52px;
+  padding: 0 6px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 900;
+  font-size: 1.1rem;
+  opacity: calc(0.55 + var(--w, 0.5) * 0.45);
+}
+
+.pills--plates {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.pills--2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.sheet__foot {
+  margin-top: 18px;
+  justify-content: space-between;
+}
+
+.badge--good {
+  background: #163a2b;
+  color: var(--good);
+}
+
+.textarea {
+  min-height: 90px;
+  padding: 10px 12px;
+  resize: vertical;
+  font: inherit;
+}
+
+.stat__of {
+  font-size: 1.1rem;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.weekcard .stats {
+  margin-top: 4px;
+}
+
+.weekcard p {
+  margin: 6px 0;
+}
+
+.pills--wide {
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+}
+
+@media (max-width: 380px) {
+  .card__foot {
+    gap: 0;
+  }
 }

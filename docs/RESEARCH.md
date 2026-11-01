@@ -102,6 +102,28 @@ strictly to avoid weights, so a physio should set personal limits. In the app:
 
 This is general guidance, not a diagnosis.
 
+## 6. Abs: how often, and "lower abs"
+
+- **Frequency:** coaching sources agree on roughly 2–4 ab sessions a week with a day or two between, and around 8–16
+  hard sets a week in total. These are commercial coaching blogs, not controlled trials, so treat them as practical
+  guidelines [24][25]. The plans put abs on three non-consecutive days, as a few sets at the end of sessions you
+  already do, not an extra workout.
+- **Lower abs:** the rectus abdominis is one muscle, so it isn't really "lower" or "upper" in the way people mean.
+  One study of abdominal exercises found the highest upper *and* lower rectus abdominis activity for hanging knee-ups
+  with straps, the reverse crunch (on a 30° incline) and a power wheel [26]. A conference paper reports that curls
+  worked the upper part more with no clear difference in the lower part [27]. So the plan includes pelvis-curling moves
+  (reverse crunch, lying leg raise, hanging knee raise) on one day, curls on another and bracing on a third.
+- **No spot reduction:** none of this removes fat from the lower belly. That's the same message the app gives on the
+  Progress tab.
+
+## 7. Choices made from your feedback
+
+- **Calves:** you prefer the seated machine, so it now comes first in every plan, then the leg-press calf raise.
+  Standing dumbbell calf raises are last, because they need balance.
+- **Romanian deadlift:** you couldn't balance it. Hamstring slots now start with the lying leg curl (once you confirm
+  photo 6), then the cable pull-through, then floor and barbell options. Anything tagged as needing balance is never
+  a default and is removed from suggestions when you say "hard to balance".
+
 ## Sources
 
 1. Strive: Kelso shrug, how to and muscles: https://strive-workout.com/2026/02/28/kelso-shrug/
@@ -127,6 +149,11 @@ This is general guidance, not a diagnosis.
 21. RippedBody: progression: https://rippedbody.com/progression/
 22. FitBudd: RIR guide: https://fitbudd.com/insights/rir-reps-in-reserve-the-complete-guide-for-fitness-professionals
 23. Hinge Health: cubital tunnel syndrome: https://www.hingehealth.com/gb/en/resources/articles/cubital-tunnel-syndrome/
+
+24. BarBend: how often to train abs: https://barbend.com/?p=22346
+25. Eat This, Not That: how many days a week to train abs: https://www.eatthis.com/how-many-days-a-week-should-you-train-your-abs
+26. Escamilla et al. 2006, Physical Therapy: electromyographic analysis of traditional and nontraditional abdominal exercises: https://scholars.csus.edu/esploro/outputs/journalArticle/Electromyographic-Analysis-of-Traditional-and-Nontraditional/99257847129401671
+27. Conference paper summarising Escamilla (2006) on upper vs lower rectus abdominis: https://ojs.ub.uni-konstanz.de/cpa/article/view/446/386
 
 Several comparison sources are written by competing app makers; they were used
 only for feature lists, not for judgements about quality.

@@ -39,14 +39,17 @@ const CURRENT_SPLIT: Plan = {
       slots: [
         slot("la-press", ["leg-press"], 3, "10–12", 150),
         slot("la-ext", ["leg-extension"], 3, "12–15", 90),
-        slot("la-rdl", ["db-rdl", "rope-pull-through"], 3, "8–12", 120),
+        slot("la-rdl", ["lying-leg-curl", "rope-pull-through", "barbell-rdl", "towel-slider-curl", "db-rdl"], 3, "8–12", 120, {
+          note: "Hamstrings. No balance needed: curl machine or cable first.",
+        }),
         slot("la-split", ["bulgarian-split-squat", "goblet-squat"], 2, "8–10", 90, {
           optional: true,
           note: "Each leg. Start with bodyweight.",
         }),
-        slot("la-calf", ["db-calf-raise", "leg-press-calf-raise"], 3, "10–15", 60),
+        slot("la-calf", ["seated-calf-raise", "leg-press-calf-raise", "db-calf-raise"], 3, "10–15", 60),
         slot("la-tib", ["tibialis-raise"], 2, "15–20", 45, { optional: true }),
-        slot("la-abs", ["rope-cable-crunch", "crunch"], 3, "10–15", 60),
+        slot("la-abs", ["rope-cable-crunch", "crunch"], 3, "10–15", 60, { note: "Abs day 1 of 3: curling." }),
+        slot("la-abs2", ["lying-leg-raise", "dead-bug"], 2, "10–15", 45, { optional: true }),
       ],
     },
     {
@@ -60,6 +63,10 @@ const CURRENT_SPLIT: Plan = {
         slot("ct-pullover", ["db-pullover"], 2, "10–12", 75, { optional: true }),
         slot("ct-tri", ["rope-triceps-pushdown"], 3, "10–12", 75),
         slot("ct-tri2", ["db-kickback"], 2, "12–15", 60, { optional: true }),
+        slot("ct-abs", ["hanging-knee-raise", "reverse-crunch", "lying-leg-raise"], 3, "10–15", 45, {
+          note: "Abs day 2 of 3: lower abs (pelvis curls).",
+        }),
+        slot("ct-abs2", ["dead-bug", "plank"], 2, "8–12", 45, { optional: true }),
       ],
     },
     {
@@ -82,13 +89,16 @@ const CURRENT_SPLIT: Plan = {
       focus: "Glutes, hamstrings, inner/outer hips, calves, core",
       slots: [
         slot("lb-press", ["leg-press-high-feet"], 3, "10–12", 150),
-        slot("lb-hinge", ["b-stance-rdl", "db-rdl"], 3, "8–12", 120, { note: "Each leg for B-stance." }),
+        slot("lb-hinge", ["lying-leg-curl", "rope-pull-through", "barbell-rdl", "towel-slider-curl", "db-rdl"], 3, "8–12", 120, {
+          note: "Hamstrings. No balance needed: curl machine or cable first.",
+        }),
         slot("lb-thrust", ["barbell-hip-thrust", "single-leg-glute-bridge"], 3, "8–12", 120),
         slot("lb-single", ["single-leg-press"], 2, "10–12", 90, { optional: true, note: "Each leg." }),
         slot("lb-adductor", ["copenhagen-plank"], 2, "15–30", 45, { note: "Seconds per side." }),
         slot("lb-abductor", ["standing-hip-abduction"], 2, "12–15", 45, { optional: true, note: "Each side." }),
         slot("lb-calf", ["seated-calf-raise", "leg-press-calf-raise"], 3, "12–15", 60),
-        slot("lb-core", ["ab-wheel-rollout", "rope-pallof-press", "dead-bug"], 3, "8–12", 60),
+        slot("lb-core", ["ab-wheel-rollout", "dead-bug", "plank"], 3, "8–12", 60, { note: "Abs day 3 of 3: bracing." }),
+        slot("lb-core2", ["rope-pallof-press"], 2, "10–12", 45, { optional: true, note: "Each side." }),
       ],
     },
   ],
@@ -120,6 +130,7 @@ const PPL_3_DAY: Plan = {
         slot("push-lateral", ["db-lateral-raise"], 3, "12–15", 60),
         slot("push-tri", ["rope-triceps-pushdown"], 3, "10–12", 75),
         slot("push-fly", ["incline-db-fly"], 2, "12–15", 60, { optional: true }),
+        slot("push-abs", ["hanging-knee-raise", "reverse-crunch", "lying-leg-raise"], 2, "10–15", 45, { note: "Abs day 1 of 3." }),
       ],
     },
     {
@@ -134,6 +145,7 @@ const PPL_3_DAY: Plan = {
         slot("pull-curl", ["ez-preacher-curl", "rope-cable-curl"], 2, "8–12", 90),
         slot("pull-hammer", ["rope-hammer-curl", "cross-body-hammer-curl"], 2, "10–12", 75),
         slot("pull-kelso", ["kelso-shrug"], 2, "10–12", 60, { optional: true }),
+        slot("pull-abs", ["ab-wheel-rollout", "dead-bug", "plank"], 2, "8–12", 45, { note: "Abs day 2 of 3." }),
       ],
     },
     {
@@ -142,11 +154,11 @@ const PPL_3_DAY: Plan = {
       focus: "Quads, hamstrings, glutes, calves (abs optional)",
       slots: [
         slot("ppl-legs-press", ["leg-press"], 3, "10–12", 150),
-        slot("ppl-legs-rdl", ["db-rdl", "rope-pull-through"], 3, "8–12", 120),
+        slot("ppl-legs-rdl", ["lying-leg-curl", "rope-pull-through", "barbell-rdl", "towel-slider-curl", "db-rdl"], 3, "8–12", 120),
         slot("ppl-legs-ext", ["leg-extension"], 3, "12–15", 90),
         slot("ppl-legs-thrust", ["barbell-hip-thrust", "single-leg-glute-bridge"], 2, "8–12", 120, { optional: true }),
-        slot("ppl-legs-calf", ["db-calf-raise", "leg-press-calf-raise"], 3, "10–15", 60),
-        slot("ppl-legs-abs", ["rope-cable-crunch", "crunch"], 2, "10–15", 60, { optional: true }),
+        slot("ppl-legs-calf", ["seated-calf-raise", "leg-press-calf-raise", "db-calf-raise"], 3, "10–15", 60),
+        slot("ppl-legs-abs", ["rope-cable-crunch", "crunch"], 3, "10–15", 60, { note: "Abs day 3 of 3." }),
       ],
     },
   ],

@@ -29,7 +29,7 @@ the written setup/cues.
 | `preacher-bench.jpg` | Preacher bench with EZ bar | Preacher curls, spider curl, EZ-bar exercises |
 | `bench-press-station.jpg` | Flat bench press station | Barbell bench press |
 | `incline-bench-station.jpg` | Incline bench press station | (Library only) |
-| `ab-bench.jpg` | Bench with foot rollers; kettlebells, plates and an ab wheel behind | Equipment list only |
+| `lying-leg-curl.jpg` | Padded bench with hip notch, T-handle and two ankle rollers: **looks like a lying leg curl machine** (the app asks you to confirm) | Lying leg curl |
 | `mystery-plate-machine.jpg` | Plate-loaded machine with seat, thigh roller and foot plate: **seated calf raise** | Seated calf raise |
 
 ## Exercises
@@ -87,14 +87,19 @@ the written setup/cues.
 | Dumbbell Romanian deadlift | Dumbbells (full range) | — | `Stiff-Legged_Dumbbell_Deadlift` |
 | B-stance (kickstand) dumbbell RDL ★ | Dumbbells (full range) | — | **Missing** |
 | Barbell hip thrust | Barbell and plates, Adjustable / incline bench | — | `Barbell_Hip_Thrust` |
+| Lying leg curl | Lying leg curl machine | `lying-leg-curl.jpg` | `Lying_Leg_Curls` (Demo machine looks different from yours; the movement is the same) |
+| Towel slider hamstring curl ★ | Bodyweight | — | `Platform_Hamstring_Slides` |
+| Barbell Romanian deadlift | Barbell and plates | — | `Romanian_Deadlift` |
 | Rope cable pull-through | Cable station with rope attachment | — | `Pull_Through` |
 | Single-leg glute bridge | Bodyweight | — | `Single_Leg_Glute_Bridge` |
 | Copenhagen plank (short lever) ★ | Adjustable / incline bench | — | **Missing** |
 | Standing side leg raise | Bodyweight | — | `Side_Leg_Raises` |
 | Standing dumbbell calf raise (deep stretch) | Dumbbells (full range) | — | `Standing_Dumbbell_Calf_Raise` |
 | Leg press calf raise | Leg press machine | — | `Calf_Press_On_The_Leg_Press_Machine` |
-| Seated calf raise | Seated calf raise machine | `mystery-plate-machine.jpg` | `Seated_Calf_Raise` |
+| Seated calf raise | Seated calf raise machine (plate-loaded) | `mystery-plate-machine.jpg` | `Seated_Calf_Raise` |
 | Wall tibialis raise ★ | Bodyweight | — | **Missing** |
+| Lying leg raise (bench) | Adjustable / incline bench | — | `Flat_Bench_Lying_Leg_Raise` |
+| Hanging knee raise | Pull-up bar | — | `Hanging_Leg_Raise` (Demo shows a straight-leg raise; keep your knees bent to start) |
 | Kneeling rope cable crunch | Cable station with rope attachment | — | `Cable_Crunch` |
 | Kneeling ab wheel rollout | Ab wheel | — | `Ab_Roller` |
 | Reverse crunch | Bodyweight | — | `Reverse_Crunch` |
@@ -102,6 +107,7 @@ the written setup/cues.
 | Dead bug | Bodyweight | — | `Dead_Bug` |
 | Crunch | Bodyweight | — | `Crunches` |
 | Plank | Bodyweight | — | `Plank` |
+
 
 To add your own photo for an exercise, take a picture of the machine, save it in
 `public/equipment/`, and add it to that machine's `photos` list in

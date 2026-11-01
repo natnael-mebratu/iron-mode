@@ -85,7 +85,13 @@ export const EQUIPMENT: Equipment[] = [
   // Not confirmed
   { id: "cable-handle", name: "Cable single handle (D-handle)", defaultAvailability: "unknown" },
   { id: "cable-straight-bar", name: "Cable straight-bar attachment", defaultAvailability: "unknown" },
-  { id: "lying-leg-curl", name: "Lying leg curl machine", defaultAvailability: "unknown" },
+  {
+    id: "lying-leg-curl",
+    name: "Lying leg curl machine",
+    defaultAvailability: "unknown",
+    notes: "Your photo 6 looks like this: padded bench with a hip notch, a T-handle and two ankle rollers. Is it?",
+    photos: ["equipment/lying-leg-curl.jpg"],
+  },
   { id: "smith", name: "Smith machine", defaultAvailability: "unknown" },
   { id: "pull-up-bar", name: "Pull-up bar", defaultAvailability: "unknown" },
   { id: "back-extension", name: "45° back extension bench", defaultAvailability: "unknown" },

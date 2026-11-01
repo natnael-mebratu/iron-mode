@@ -23,6 +23,15 @@ export interface Readiness {
   soreness: 1 | 2 | 3;
 }
 
+/** An exercise added to one day's workout on top of the plan. */
+export interface ExtraSlot {
+  id: string;
+  exerciseId: string;
+  sets: number;
+  reps: string;
+  restSec: number;
+}
+
 export interface WorkoutLog {
   date: string;
   planId: string;
@@ -34,6 +43,12 @@ export interface WorkoutLog {
   notes?: string;
   /** Exercises swapped in for this day only, keyed by slot id. */
   swaps?: Record<string, string>;
+  /** Slots skipped today. */
+  skipped?: string[];
+  /** Today's order of slot ids, when the user moved things around. */
+  order?: string[];
+  /** Exercises added to today's workout. */
+  extras?: ExtraSlot[];
 }
 
 export interface BodyEntry {
@@ -56,6 +71,19 @@ export interface Settings {
   ownGymPhotos: boolean;
   /** The "install the app" banner was dismissed. */
   installBannerDismissed: boolean;
+  /** Plate sizes (kg) the gym has, for the plate calculator. */
+  plates: number[];
+  /** When the user last saved a backup file (ISO). */
+  lastBackupAt: string | null;
+  /** Don't show the backup reminder until this date (YYYY-MM-DD). */
+  backupSnoozedUntil: string | null;
+}
+
+export interface ExerciseNote {
+  /** Free text such as "seat 4, back pad 3". */
+  note?: string;
+  /** Weight of the bar or machine arm before plates (kg). */
+  base?: number;
 }
 
 export interface AppState {
@@ -70,7 +98,14 @@ export interface AppState {
   settings: Settings;
   /** Exercises the user chose to always use for a slot (keyed by slot id). */
   swaps: Record<string, string>;
+  /** Star ratings 1–5, keyed by exercise id. */
+  ratings: Record<string, number>;
+  /** Exercises the user doesn't want to see again. */
+  avoided: string[];
+  exerciseNotes: Record<string, ExerciseNote>;
 }
+
+export const DEFAULT_PLATES = [25, 20, 15, 10, 5, 2.5, 1.25];
 
 const LEGACY_KEY = "iron-mode:state";
 const STORE_KEY = "iron-mode:store";
@@ -90,6 +125,9 @@ export function defaultState(): AppState {
     logs: {},
     body: [],
     swaps: {},
+    ratings: {},
+    avoided: [],
+    exerciseNotes: {},
     settings: {
       elbowFriendly: true,
       showDemoPhotos: false,
@@ -99,6 +137,9 @@ export function defaultState(): AppState {
       fastingDays: false,
       ownGymPhotos: false,
       installBannerDismissed: false,
+      plates: [...DEFAULT_PLATES],
+      lastBackupAt: null,
+      backupSnoozedUntil: null,
     },
   };
 }
@@ -113,6 +154,27 @@ const num = (v: unknown): number | null => (typeof v === "number" && Number.isFi
 function stringMap(raw: unknown): Record<string, string> {
   const out: Record<string, string> = {};
   if (isRecord(raw)) for (const [k, v] of Object.entries(raw)) if (typeof v === "string") out[k] = v;
+  return out;
+}
+
+function sanitizePlates(raw: unknown): number[] {
+  if (!Array.isArray(raw)) return [...DEFAULT_PLATES];
+  const plates = [...new Set(raw.filter((v): v is number => typeof v === "number" && v > 0 && v <= 50))].sort((a, b) => b - a);
+  return plates.length ? plates : [...DEFAULT_PLATES];
+}
+
+const stringList = (raw: unknown): string[] =>
+  Array.isArray(raw) ? [...new Set(raw.filter((v): v is string => typeof v === "string"))] : [];
+
+function sanitizeExtras(raw: unknown): ExtraSlot[] {
+  if (!Array.isArray(raw)) return [];
+  const out: ExtraSlot[] = [];
+  for (const e of raw) {
+    if (!isRecord(e) || typeof e.id !== "string" || typeof e.exerciseId !== "string") continue;
+    const sets = typeof e.sets === "number" && e.sets >= 1 && e.sets <= 12 ? Math.round(e.sets) : 3;
+    const rest = typeof e.restSec === "number" && e.restSec >= 0 && e.restSec <= 600 ? Math.round(e.restSec) : 90;
+    out.push({ id: e.id, exerciseId: e.exerciseId, sets, reps: typeof e.reps === "string" ? e.reps.slice(0, 20) : "8–12", restSec: rest });
+  }
   return out;
 }
 
@@ -148,6 +210,12 @@ function sanitizeLog(date: string, raw: unknown): WorkoutLog | null {
   if (typeof raw.notes === "string") log.notes = raw.notes;
   const swaps = stringMap(raw.swaps);
   if (Object.keys(swaps).length) log.swaps = swaps;
+  const skipped = stringList(raw.skipped);
+  if (skipped.length) log.skipped = skipped;
+  const order = stringList(raw.order);
+  if (order.length) log.order = order;
+  const extras = sanitizeExtras(raw.extras);
+  if (extras.length) log.extras = extras;
   return log;
 }
 
@@ -238,8 +306,26 @@ export function sanitize(raw: unknown): AppState {
     fastingDays: bool(s.fastingDays, false),
     ownGymPhotos: bool(s.ownGymPhotos, false),
     installBannerDismissed: bool(s.installBannerDismissed, false),
+    plates: sanitizePlates(s.plates),
+    lastBackupAt: typeof s.lastBackupAt === "string" ? s.lastBackupAt : null,
+    backupSnoozedUntil: typeof s.backupSnoozedUntil === "string" && DATE_RE.test(s.backupSnoozedUntil) ? s.backupSnoozedUntil : null,
   };
   state.swaps = stringMap(raw.swaps);
+  if (isRecord(raw.ratings)) {
+    for (const [id, v] of Object.entries(raw.ratings)) {
+      if (typeof v === "number" && Number.isInteger(v) && v >= 1 && v <= 5) state.ratings[id] = v;
+    }
+  }
+  state.avoided = stringList(raw.avoided);
+  if (isRecord(raw.exerciseNotes)) {
+    for (const [id, v] of Object.entries(raw.exerciseNotes)) {
+      if (!isRecord(v)) continue;
+      const entry: ExerciseNote = {};
+      if (typeof v.note === "string" && v.note.trim()) entry.note = v.note.slice(0, 200);
+      if (typeof v.base === "number" && Number.isFinite(v.base) && v.base >= 0 && v.base <= 300) entry.base = v.base;
+      if (entry.note !== undefined || entry.base !== undefined) state.exerciseNotes[id] = entry;
+    }
+  }
   return state;
 }
 
@@ -251,6 +337,9 @@ export function mergeStates(current: AppState, incoming: AppState): AppState {
     ...current,
     logs: { ...incoming.logs, ...current.logs },
     body: [...bodyByDate.values()].sort((a, b) => a.date.localeCompare(b.date)),
+    ratings: { ...incoming.ratings, ...current.ratings },
+    avoided: [...new Set([...current.avoided, ...incoming.avoided])],
+    exerciseNotes: { ...incoming.exerciseNotes, ...current.exerciseNotes },
   };
 }
 

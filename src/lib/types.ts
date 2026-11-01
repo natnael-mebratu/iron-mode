@@ -48,6 +48,8 @@ export interface Exercise {
   load?: LoadType;
   /** Smallest sensible weight jump in kg. */
   increment?: number;
+  /** Needs balance on one leg or with a free weight; skipped when someone says they can't balance. */
+  unstable?: boolean;
   /** Free Exercise DB folder name for optional online demo photos. */
   demo?: string;
   /** Note shown when the demo photo differs from our exact setup. */

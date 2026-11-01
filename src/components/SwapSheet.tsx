@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { equipmentName } from "../data/equipment";
+import { rankAlternatives } from "../lib/rank";
 import { alternativesFor, type Alternative, type Inventory } from "../lib/resolve";
 import type { Availability, Exercise, Slot } from "../lib/types";
 
@@ -15,6 +16,10 @@ interface Props {
   hasLogged: boolean;
   /** The current exercise came from a swap. */
   isSwapped: boolean;
+  ratings: Record<string, number>;
+  avoided: ReadonlySet<string>;
+  /** Whether "use it every time" makes sense (not for exercises added just for today). */
+  canSave: boolean;
   onPick: (exerciseId: string, always: boolean) => void;
   onReset: () => void;
   onAnswerEquipment: (id: string, value: Availability) => void;
@@ -23,7 +28,7 @@ interface Props {
 
 /** Bottom sheet for replacing one exercise, e.g. when a machine is busy or missing. */
 export function SwapSheet(props: Props) {
-  const { slot, current, inventory, elbowFriendly, usedIds, hasLogged, isSwapped, onPick, onReset, onAnswerEquipment, onClose } = props;
+  const { slot, current, inventory, elbowFriendly, usedIds, hasLogged, isSwapped, ratings, avoided, canSave, onPick, onReset, onAnswerEquipment, onClose } = props;
   const [always, setAlways] = useState(false);
   const [all, setAll] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -39,17 +44,22 @@ export function SwapSheet(props: Props) {
     };
   }, [onClose]);
 
-  const { ready, needsEquipment } = alternativesFor(slot, current, inventory, { elbowFriendly, exclude: usedIds, all });
+  const found = alternativesFor(slot, current, inventory, { elbowFriendly, exclude: usedIds, all, avoided });
+  // Best matches first: same muscles, similar equipment, and the ones you rated highly.
+  const order = (list: Alternative[]) => rankAlternatives(list, { current, ratings });
+  const ready = order(found.ready);
+  const needsEquipment = order(found.needsEquipment);
 
   const row = (alt: Alternative) => (
     <li key={alt.exercise.id} className="swap__item">
       {alt.askAbout.length === 0 ? (
-        <button type="button" className="swap__pick" onClick={() => onPick(alt.exercise.id, always)}>
+        <button type="button" className="swap__pick" onClick={() => onPick(alt.exercise.id, canSave && always)}>
           <strong>{alt.exercise.name}</strong>
           <span className="muted small block">{alt.exercise.targetMuscles.join(" · ")}</span>
           <span className="muted small block">{alt.exercise.why}</span>
           <span className="badges">
             {alt.inPlan && <span className="badge">In the plan</span>}
+            {ratings[alt.exercise.id] ? <span className="badge">{"★".repeat(ratings[alt.exercise.id])}</span> : null}
             {alt.exercise.gem && <span className="badge badge--gem">★ Hidden gem</span>}
           </span>
         </button>
@@ -100,13 +110,15 @@ export function SwapSheet(props: Props) {
           </p>
         )}
 
-        <label className="toggle">
-          <input type="checkbox" checked={always} onChange={(e) => setAlways(e.target.checked)} />
-          <span>
-            <strong>Use it every time</strong>
-            <span className="muted small block">Off = just for this workout. On = also next time.</span>
-          </span>
-        </label>
+        {canSave && (
+          <label className="toggle">
+            <input type="checkbox" checked={always} onChange={(e) => setAlways(e.target.checked)} />
+            <span>
+              <strong>Use it every time</strong>
+              <span className="muted small block">Off = just for this workout. On = also next time.</span>
+            </span>
+          </label>
+        )}
 
         {isSwapped && (
           <button type="button" className="btn btn--ghost btn--small" onClick={onReset}>

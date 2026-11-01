@@ -21,6 +21,8 @@ export function exerciseAvailability(exercise: Exercise, inventory: Inventory): 
 export interface ResolveOptions {
   /** Skip exercises that bend the elbow deeply under load. */
   elbowFriendly?: boolean;
+  /** Exercises the user doesn't want; never picked automatically. */
+  avoided?: ReadonlySet<string>;
   /** The exercise the user picked for this slot (a swap for today or a saved one). */
   choice?: string | null;
   /**
@@ -54,11 +56,11 @@ export type SlotResolution =
       askAbout: string[];
     };
 
-function planPick(slot: Slot, inventory: Inventory, elbowFriendly: boolean) {
+function planPick(slot: Slot, inventory: Inventory, elbowFriendly: boolean, avoided?: ReadonlySet<string>) {
   const askAbout: string[] = [];
   for (const [index, id] of slot.options.entries()) {
     const exercise = EXERCISES_BY_ID.get(id);
-    if (!exercise || (elbowFriendly && exercise.elbowCaution)) continue;
+    if (!exercise || avoided?.has(id) || (elbowFriendly && exercise.elbowCaution)) continue;
     const availability = exerciseAvailability(exercise, inventory);
     if (availability === "available") return { exercise, index, askAbout };
     if (availability === "unknown") {
@@ -79,7 +81,7 @@ function planPick(slot: Slot, inventory: Inventory, elbowFriendly: boolean) {
  */
 export function resolveSlot(slot: Slot, inventory: Inventory, opts: ResolveOptions = {}): SlotResolution {
   const friendly = !!opts.elbowFriendly;
-  const plan = planPick(slot, inventory, friendly);
+  const plan = planPick(slot, inventory, friendly, opts.avoided);
 
   const sourceOf = (ex: Exercise): Source => (ex.id === opts.choice ? "swap" : ex.id === plan.exercise?.id ? "plan" : "logged");
 
@@ -96,7 +98,7 @@ export function resolveSlot(slot: Slot, inventory: Inventory, opts: ResolveOptio
   }
 
   const choice = opts.choice ? EXERCISES_BY_ID.get(opts.choice) : undefined;
-  if (choice && !(friendly && choice.elbowCaution) && exerciseAvailability(choice, inventory) === "available") {
+  if (choice && !opts.avoided?.has(choice.id) && !(friendly && choice.elbowCaution) && exerciseAvailability(choice, inventory) === "available") {
     return { kind: "assigned", exercise: choice, source: "swap", isSubstitute: false, askAbout: [] };
   }
 
@@ -127,6 +129,8 @@ export interface AlternativesOptions {
   exclude?: Set<string>;
   /** Offer every exercise, not only the same muscle group. */
   all?: boolean;
+  /** Exercises the user doesn't want to see. */
+  avoided?: ReadonlySet<string>;
 }
 
 /**
@@ -152,6 +156,7 @@ export function alternativesFor(
     seen.add(exercise.id);
     if (exercise.id === current?.id || opts.exclude?.has(exercise.id)) continue;
     if (opts.elbowFriendly && exercise.elbowCaution) continue;
+    if (opts.avoided?.has(exercise.id)) continue;
     const availability = exerciseAvailability(exercise, inventory);
     if (availability === "unavailable") continue;
     const askAbout = exercise.equipmentIds.filter((id) => availabilityOf(id, inventory) === "unknown");
