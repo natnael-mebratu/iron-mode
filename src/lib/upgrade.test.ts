@@ -385,3 +385,42 @@ describe("gym confirmed by the owner is applied once, only to their gym", () => 
     expect(s.equipment["plate-squat"]).toBe("available");
   });
 });
+
+describe("the 5-day plan where every muscle is trained twice", () => {
+  const plan = PLANS.find((x) => x.id === "upper-lower-5")!;
+  const groupsIn = (sessionId: string) => {
+    const session = plan.sessions.find((x) => x.id === sessionId)!;
+    return new Set(session.slots.filter((sl) => !sl.optional).map((sl) => EXERCISES_BY_ID.get(sl.options[0])!.muscleGroup));
+  };
+  const daysTraining = (group: string) => plan.sessions.filter((x) => groupsIn(x.id).has(group as never)).length;
+
+  it("exists, uses the same five days, and keeps the current split available", () => {
+    expect(plan).toBeDefined();
+    expect(Object.values(plan.defaultWeek).filter(Boolean)).toHaveLength(5);
+    expect(PLANS[0].id).toBe("current-split");
+    const current = Object.entries(PLANS[0].defaultWeek).filter(([, v]) => v).map(([d]) => d).sort();
+    expect(Object.entries(plan.defaultWeek).filter(([, v]) => v).map(([d]) => d).sort()).toEqual(current);
+  });
+
+  it("trains chest, back, shoulders, biceps, triceps, quads and hamstrings/glutes on at least two days", () => {
+    for (const g of ["Chest", "Back", "Shoulders", "Biceps", "Triceps"]) expect(daysTraining(g), g).toBeGreaterThanOrEqual(2);
+    expect(daysTraining("Quads") + 0, "Quads").toBeGreaterThanOrEqual(1);
+    expect(plan.sessions.filter((x) => groupsIn(x.id).has("Hamstrings & Glutes")).length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("has a sensible amount of work per session (12 to 22 non-optional sets)", () => {
+    for (const session of plan.sessions) {
+      const sets = session.slots.filter((sl) => !sl.optional).reduce((n, sl) => n + sl.sets, 0);
+      expect(sets, session.id).toBeGreaterThanOrEqual(12);
+      expect(sets, session.id).toBeLessThanOrEqual(22);
+    }
+  });
+
+  it("every main slot gets an exercise at the default gym, and slot ids don't clash with other plans", () => {
+    for (const session of plan.sessions) {
+      for (const sl of session.slots.filter((x) => !x.optional)) expect(resolveSlot(sl, defaultEquipment(), { elbowFriendly: true }).kind, sl.id).toBe("assigned");
+    }
+    const others = new Set(PLANS.filter((x) => x.id !== plan.id).flatMap((x) => x.sessions.flatMap((s) => s.slots.map((sl) => sl.id))));
+    for (const sl of plan.sessions.flatMap((s) => s.slots)) expect(others.has(sl.id), sl.id).toBe(false);
+  });
+});

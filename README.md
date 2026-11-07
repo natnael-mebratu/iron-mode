@@ -53,6 +53,7 @@ subscription.
 **Plan**
 - Your **current 5-day split** (Shoulders+Arms / Legs A / Chest+Triceps /
   Back+Biceps / Legs B), rebuilt around your machines.
+- Optional **5 days, every muscle twice a week** (Upper / Lower / Push / Pull / Legs on the same five days), so chest, back, shoulders and arms each get two sessions a week.
 - Optional **beginner 3-day Push/Pull/Legs**, with a plain-language explanation.
 - Swap days without losing anything.
 
